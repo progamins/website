@@ -57,7 +57,7 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
 
   // Si no queda ninguno, se mantiene el banner por defecto
   if (!banners.length) {
-    banners.push({ tipo: 'video', fondo: '/uploads/productos/banner-video1.mp4', enlace: null });
+    banners.push({ tipo: 'imagen', fondo: '/uploads/banners/banner1.svg', enlace: '/novedades' });
   }
 
   setConfig('banners', banners);

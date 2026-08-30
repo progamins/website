@@ -1,0 +1,29 @@
+---
+---
+<div data-cookie-banner class="fixed inset-x-0 bottom-0 z-[90] hidden px-4 pb-4">
+  <div class="mx-auto flex max-w-3xl flex-col gap-4 rounded-2xl border border-ink/10 bg-surface/95 p-5 shadow-2xl shadow-ink/20 backdrop-blur sm:flex-row sm:items-center">
+    <div class="flex items-start gap-3 sm:items-center">
+      <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gold/10 text-gold">
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4a4 4 0 100 8 4 4 0 000-8zm0 8c-3.5 0-7 1.5-7 4.5V19h14v-2.5c0-3-3.5-4.5-7-4.5z"/></svg>
+      </span>
+      <p class="text-sm text-ink-soft">Usamos cookies para mejorar tu experiencia, analizar el tráfico y personalizar contenidos. Al continuar aceptas su uso. <a href="/cookies" class="font-medium text-gold hover:text-gold-dark">Más información</a></p>
+    </div>
+    <div class="flex shrink-0 gap-2">
+      <button data-cookie-accept class="rounded-full bg-ink px-5 py-2 text-sm font-semibold text-cream transition hover:bg-ink-3">Aceptar</button>
+      <button data-cookie-reject class="rounded-full border border-ink/15 px-5 py-2 text-sm font-semibold text-ink-soft transition hover:border-gold hover:text-gold">Rechazar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const KEY = 'cg_cookie_consent';
+  const banner = document.querySelector('[data-cookie-banner]');
+  const already = localStorage.getItem(KEY);
+  if (banner && !already) banner.classList.remove('hidden');
+  const decide = (v) => {
+    localStorage.setItem(KEY, v);
+    banner?.classList.add('hidden');
+  };
+  document.querySelector('[data-cookie-accept]')?.addEventListener('click', () => decide('accepted'));
+  document.querySelector('[data-cookie-reject]')?.addEventListener('click', () => decide('rejected'));
+</script>

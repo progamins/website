@@ -1,0 +1,20 @@
+---
+import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import CategoriaForm from '../../../../components/admin/CategoriaForm.astro';
+import { db, type Categoria } from '../../../../lib/db';
+export const prerender = false;
+const { id } = Astro.params;
+const categoria = db.prepare('SELECT * FROM categorias WHERE id = ?').get(Number(id)) as Categoria | undefined;
+if (!categoria) return Astro.redirect('/admin/categorias');
+---
+<AdminLayout title={`Editar · ${categoria.nombre}`}>
+  <div class="mx-auto max-w-xl">
+    <a href="/admin/categorias" class="text-xs text-gray-400 hover:text-gold">← Volver a categorías</a>
+    <div class="mt-4 rounded-2xl border border-white/10 bg-ink-2 p-6">
+      <h2 class="font-display text-lg text-white">Editar categoría</h2>
+      <div class="mt-4">
+        <CategoriaForm categoria={categoria} />
+      </div>
+    </div>
+  </div>
+</AdminLayout>

@@ -3,6 +3,7 @@ import '../styles/global.css';
 import Navbar from './Navbar.astro';
 import Footer from './Footer.astro';
 import CartToast from './CartToast.astro';
+import CookieConsent from './CookieConsent.astro';
 interface Props {
   title?: string;
   description?: string;
@@ -35,7 +36,7 @@ const can = new URL(Astro.url.pathname + Astro.url.search, Astro.site ?? 'http:/
     <meta name="theme-color" content="#faf6ef" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <title>{title}</title>
   </head>
   <body class="min-h-screen bg-cream text-ink antialiased">
@@ -45,5 +46,16 @@ const can = new URL(Astro.url.pathname + Astro.url.search, Astro.site ?? 'http:/
     </main>
     <Footer />
     <CartToast />
+    <CookieConsent />
+
+    <script>
+      // Fallback global: si una imagen falla, se sustituye por el placeholder de marca
+      document.addEventListener('error', (e) => {
+        const t = e.target as HTMLImageElement;
+        if (t && t.tagName === 'IMG' && t.getAttribute('src') !== '/assets/placeholder.svg') {
+          t.setAttribute('src', '/assets/placeholder.svg');
+        }
+      }, true);
+    </script>
   </body>
 </html>

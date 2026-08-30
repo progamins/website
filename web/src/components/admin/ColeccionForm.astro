@@ -1,0 +1,21 @@
+---
+import type { Coleccion } from '../../lib/db';
+interface Props { coleccion?: Coleccion; }
+const { coleccion } = Astro.props;
+---
+<form action="/admin/colecciones/guardar" method="post" enctype="multipart/form-data" class="space-y-3">
+  <input type="hidden" name="id" value={coleccion?.id ?? ''} />
+  <input type="hidden" name="imagen_actual" value={coleccion?.imagen ?? ''} />
+
+  <input name="nombre" required placeholder="Nombre de la colección" value={coleccion?.nombre ?? ''} class="w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-white placeholder-gray-500 outline-none focus:border-gold" />
+  <textarea name="descripcion" rows="3" placeholder="Descripción" class="w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-white placeholder-gray-500 outline-none focus:border-gold">{coleccion?.descripcion ?? ''}</textarea>
+
+  <div>
+    <label class="mb-1 block text-xs text-gray-400">Imagen de la colección</label>
+    {coleccion?.imagen && <img src={coleccion.imagen} class="mb-2 h-20 rounded-lg object-cover" alt="" />}
+    <input name="imagen" type="file" accept="image/*" class="block w-full text-sm text-gray-400 file:mr-3 file:rounded-full file:border-0 file:bg-gold file:px-4 file:py-2 file:text-xs file:font-semibold file:text-ink" />
+    <p class="mt-1 text-[11px] text-gray-600">Recomendado 800 × 1000 px (4:5). JPG o PNG de alta calidad.</p>
+  </div>
+
+  <button class="w-full rounded-full bg-gold px-6 py-2.5 font-semibold text-ink hover:bg-gold-light">{coleccion ? 'Guardar cambios' : 'Crear colección'}</button>
+</form>

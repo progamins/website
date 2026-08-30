@@ -55,19 +55,19 @@ const sectionHeading = 'mt-2 font-display text-3xl text-ink sm:text-4xl';
 
   <!-- CATEGORÍAS -->
   <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-    <div class="mb-8 text-center">
-      <p class={sectionTitle}>Explora por categoría</p>
-      <h2 class={sectionHeading}>Nuestras colecciones</h2>
+    <div class="mb-8 flex items-end justify-between">
+      <div>
+        <p class={sectionTitle}>Explora por categoría</p>
+        <h2 class={sectionHeading}>Nuestras categorías</h2>
+      </div>
     </div>
-    <div class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+    <div class="flex gap-5 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {categorias.map((c) => (
-        <a href={`/categoria/${c.slug}`} class="group relative overflow-hidden rounded-2xl border border-ink/10 bg-surface shadow-sm transition hover:shadow-lg">
-          <div class="aspect-[3/4] w-full bg-sand">
-            {c.imagen && <img src={c.imagen} alt={c.nombre} loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />}
+        <a href={`/categoria/${c.slug}`} class="group flex shrink-0 flex-col items-center gap-2.5">
+          <div class="h-20 w-20 overflow-hidden rounded-full border border-ink/10 bg-surface shadow-sm transition group-hover:border-gold/60 group-hover:shadow-lg sm:h-24 sm:w-24">
+            {(c.icono ?? c.imagen) && <img src={c.icono ?? c.imagen} alt={c.nombre} loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />}
           </div>
-          <div class="absolute inset-0 flex items-end bg-gradient-to-t from-ink/80 via-ink/10 to-transparent p-3">
-            <span class="font-display text-lg text-white">{c.nombre}</span>
-          </div>
+          <span class="text-center text-xs font-medium text-ink-soft group-hover:text-gold-dark">{c.nombre}</span>
         </a>
       ))}
     </div>

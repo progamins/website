@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS categorias (
   slug TEXT NOT NULL UNIQUE,
   descripcion TEXT,
   imagen TEXT,
+  icono TEXT,
   activa INTEGER NOT NULL DEFAULT 1,
   creado_en TEXT NOT NULL DEFAULT (datetime('now')),
   actualizado_en TEXT NOT NULL DEFAULT (datetime('now'))

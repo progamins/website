@@ -1,54 +1,188 @@
 ---
 import AdminLayout from '../../components/admin/AdminLayout.astro';
-import { getStats, getPedidosPorMes, getNotificacionesRecientes, formatEUR } from '../../lib/db';
+import {
+  getStats, getPedidosPorMes, getNotificacionesRecientes, formatEUR,
+  getPedidosPorEstado, getConteoPorCategoria, getTopProductos, getPedidosRecientes,
+} from '../../lib/db';
 import { getEstadisticasPago, formatEUR as fmtPago } from '../../lib/pagos';
+
 const stats = getStats();
-const pagoStats = getEstadisticasPago();
+const pago = getEstadisticasPago();
 const porMes = getPedidosPorMes();
+const pedidosEstado = getPedidosPorEstado();
+const porCategoria = getConteoPorCategoria();
+const top = getTopProductos(5);
+const recientes = getPedidosRecientes(6);
 const notifs = getNotificacionesRecientes(6);
-const meses = porMes.map((m) => m.mes);
-const ventas = porMes.map((m) => m.total);
-const cards = [
-  { label: 'Productos', value: String(stats.productos), icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
-  { label: 'Usuarios', value: String(stats.usuarios), icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
-  { label: 'Pedidos', value: String(stats.pedidos), icon: 'M3 3h18l-1 17-8 2-8-2L3 3zm4 4h10M7 11h10' },
-  { label: 'Ingresos netos', value: fmtPago(pagoStats.neto), icon: 'M12 8c-2.2 0-4 .9-4 2s1.8 2 4 2 4 .9 4 2-1.8 2-4 2m0-8c0-1.1 0-2 0-2m0 12c0-1.1 0-2 0-2' },
+
+// Barras de ventas por mes
+const shortMes = (yyyyMM: string) => new Date(yyyyMM + '-01').toLocaleDateString('es-ES', { month: 'short' }).replace('.', '');
+const maxVenta = Math.max(1, ...porMes.map((m) => m.total || 0));
+const barras = porMes.map((m) => ({ mes: m.mes, label: shortMes(m.mes), total: m.total, pct: Math.max(4, (m.total / maxVenta) * 100) }));
+
+// Dona de pedidos por estado
+const coloresEstado: Record<string, string> = { pendiente: '#eab308', procesando: '#3b82f6', enviado: '#a855f7', entregado: '#22c55e', cancelado: '#ef4444' };
+const nombresEstado: Record<string, string> = { pendiente: 'Pendiente', procesando: 'Procesando', enviado: 'Enviado', entregado: 'Entregado', cancelado: 'Cancelado' };
+const totalPedidos = stats.pedidos || 1;
+let acc = 0;
+const segs: string[] = [];
+for (const e of pedidosEstado) { const pct = (e.n / totalPedidos) * 100; segs.push(`${coloresEstado[e.estado] ?? '#6b7280'} ${acc}% ${acc + pct}%`); acc += pct; }
+const donut = `conic-gradient(${segs.join(', ')})`;
+
+const maxCat = Math.max(1, ...porCategoria.map((c) => c.n || 0));
+
+const kpis = [
+  { label: 'Ingresos netos', value: fmtPago(pago.neto), sub: `Cobrado ${fmtPago(pago.aprobado)} · Reembolsos ${fmtPago(pago.reembolsado)}`, icon: 'M12 8c-2.2 0-4 .9-4 2s1.8 2 4 2 4 .9 4 2-1.8 2-4 2m0-8c0-1.1 0-2 0-2m0 12c0-1.1 0-2 0-2', accent: 'text-gold bg-gold/10' },
+  { label: 'Pedidos', value: String(stats.pedidos), sub: `${stats.pedidosActivos} en curso · ${stats.pedidos - stats.pedidosActivos} finalizados`, icon: 'M3 3h18l-1 17-8 2-8-2L3 3zm4 4h10M7 11h10', accent: 'text-blue-400 bg-blue-500/10' },
+  { label: 'Productos', value: String(stats.productos), sub: `${stats.destacados} destacados · ${stats.sinStock.length} agotados`, icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4', accent: 'text-green-400 bg-green-500/10' },
+  { label: 'Usuarios', value: String(stats.usuarios), sub: `${stats.usuariosAdmin} admin · ${stats.usuariosModerador} mod · ${stats.usuariosCliente} clientes`, icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z', accent: 'text-purple-400 bg-purple-500/10' },
 ];
 ---
 <AdminLayout title="Dashboard">
-  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-    {cards.map((c) => (
-      <div class="rounded-2xl border border-white/10 bg-ink-2 p-5">
+  <!-- KPIs -->
+  <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    {kpis.map((k) => (
+      <div class="rounded-2xl border border-white/10 bg-ink-2 p-5 transition hover:border-white/20">
         <div class="flex items-center justify-between">
-          <span class="text-sm text-gray-400">{c.label}</span>
-          <svg class="h-5 w-5 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d={c.icon}/></svg>
+          <span class="text-sm text-gray-400">{k.label}</span>
+          <span class:list={["flex h-10 w-10 items-center justify-center rounded-xl", k.accent]}>
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d={k.icon}/></svg>
+          </span>
         </div>
-        <p class="mt-2 font-display text-2xl text-white">{c.value}</p>
+        <p class="mt-2 font-display text-2xl text-white">{k.value}</p>
+        <p class="mt-1 text-xs text-gray-500">{k.sub}</p>
       </div>
     ))}
   </div>
 
+  <!-- Gráficos -->
   <div class="mt-6 grid gap-6 lg:grid-cols-3">
     <div class="rounded-2xl border border-white/10 bg-ink-2 p-5 lg:col-span-2">
-      <h2 class="font-display text-lg text-white">Ventas por mes</h2>
-      <div class="mt-4 h-64"><canvas data-chart></canvas></div>
-      {meses.length === 0 && <p class="mt-4 text-sm text-gray-500">Sin datos de ventas aún.</p>}
+      <div class="flex items-center justify-between">
+        <h2 class="font-display text-lg text-white">Ventas por mes</h2>
+        <span class="text-xs text-gray-500">Total {fmtPago(stats.ventas)}</span>
+      </div>
+      {porMes.length === 0 ? (
+        <p class="py-16 text-center text-sm text-gray-500">Sin datos de ventas aún.</p>
+      ) : (
+        <div class="mt-6 flex h-56 items-end gap-3 border-b border-white/10">
+          {barras.map((b) => (
+            <div class="flex flex-1 flex-col items-center justify-end gap-2" title={`${b.mes}: ${formatEUR(b.total)}`}>
+              <span class="text-[10px] text-gray-400">{formatEUR(b.total).replace('S/', '')}</span>
+              <div class="w-full rounded-t-md bg-gradient-to-t from-gold-dark to-gold-light transition hover:opacity-80" style={`height:${b.pct}%`}></div>
+              <span class="text-[11px] text-gray-500 capitalize">{b.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+
+    <div class="rounded-2xl border border-white/10 bg-ink-2 p-5">
+      <h2 class="font-display text-lg text-white">Pedidos por estado</h2>
+      <div class="mt-4 flex flex-col items-center">
+        <div class="relative h-40 w-40 rounded-full" style={`background:${donut}`}>
+          <div class="absolute inset-4 flex flex-col items-center justify-center rounded-full bg-ink-2">
+            <span class="font-display text-2xl text-white">{stats.pedidos}</span>
+            <span class="text-[10px] uppercase tracking-wide text-gray-500">pedidos</span>
+          </div>
+        </div>
+        <ul class="mt-5 w-full space-y-2 text-sm">
+          {pedidosEstado.map((e) => (
+            <li class="flex items-center gap-2">
+              <span class="h-2.5 w-2.5 rounded-full" style={`background:${coloresEstado[e.estado] ?? '#6b7280'}`}></span>
+              <span class="flex-1 text-gray-300">{nombresEstado[e.estado] ?? e.estado}</span>
+              <span class="text-gray-400">{e.n}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tablas y listas -->
+  <div class="mt-6 grid gap-6 lg:grid-cols-2">
+    <div class="rounded-2xl border border-white/10 bg-ink-2 p-5">
+      <h2 class="font-display text-lg text-white">Productos por categoría</h2>
+      <div class="mt-4 space-y-3">
+        {porCategoria.slice(0, 8).map((c) => (
+          <div>
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-gray-300">{c.nombre}</span>
+              <span class="text-gray-400">{c.n}</span>
+            </div>
+            <div class="mt-1 h-1.5 w-full rounded-full bg-white/5">
+              <div class="h-full rounded-full bg-gradient-to-r from-gold-dark to-gold-light" style={`width:${(c.n / maxCat) * 100}%`}></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div class="rounded-2xl border border-white/10 bg-ink-2 p-5">
+      <h2 class="font-display text-lg text-white">Top productos vendidos</h2>
+      <ul class="mt-4 space-y-3">
+        {top.map((p, i) => (
+          <li class="flex items-center gap-3">
+            <span class="w-5 text-sm font-semibold text-gold">{i + 1}</span>
+            <img src={p.imagen ?? ''} class="h-10 w-10 rounded-lg object-cover bg-white/5" onerror="this.style.visibility='hidden'" alt="" />
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-sm text-gray-200">{p.nombre}</p>
+              <p class="text-xs text-gray-500">{formatEUR(p.precio_actual)}</p>
+            </div>
+            <span class="shrink-0 rounded bg-white/5 px-2 py-0.5 text-xs text-gray-300">{p.vendidos} vend.</span>
+          </li>
+        ))}
+        {top.length === 0 && <li class="text-sm text-gray-500">Sin ventas registradas.</li>}
+      </ul>
+    </div>
+  </div>
+
+  <div class="mt-6 grid gap-6 lg:grid-cols-3">
+    <div class="rounded-2xl border border-white/10 bg-ink-2 p-5">
+      <h2 class="mb-3 font-display text-lg text-white">Sin stock</h2>
+      {stats.sinStock.length === 0 ? <p class="text-sm text-gray-500">Todo con stock ✓</p> : (
+        <ul class="space-y-2">
+          {stats.sinStock.map((p) => (
+            <li class="flex items-center justify-between gap-2 text-sm">
+              <span class="truncate text-gray-300">{p.nombre}</span>
+              <span class="shrink-0 rounded bg-red-500/20 px-2 py-0.5 text-xs text-red-400">agotado</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+
+    <div class="rounded-2xl border border-white/10 bg-ink-2 p-5">
+      <h2 class="font-display text-lg text-white">Últimos pedidos</h2>
+      <ul class="mt-4 space-y-3">
+        {recientes.map((ped) => (
+          <li class="flex items-center justify-between gap-2 text-sm">
+            <div class="min-w-0">
+              <p class="truncate font-medium text-gray-200">{ped.referencia}</p>
+              <p class="text-xs text-gray-500">{ped.cliente ?? 'Invitado'} · {new Date(ped.creado_en).toLocaleDateString('es-ES')}</p>
+            </div>
+            <span class="font-display text-gold">{formatEUR(ped.total)}</span>
+          </li>
+        ))}
+        {recientes.length === 0 && <li class="text-sm text-gray-500">Sin pedidos.</li>}
+      </ul>
     </div>
 
     <div class="space-y-4">
       <div class="rounded-2xl border border-white/10 bg-ink-2 p-5">
-        <h2 class="mb-3 font-display text-lg text-white">Sin stock</h2>
-        {stats.sinStock.length === 0 ? <p class="text-sm text-gray-500">Todo con stock ✓</p> : (
-          <ul class="space-y-2">
-            {stats.sinStock.map((p) => (
-              <li class="flex items-center justify-between gap-2 text-sm"><span class="truncate text-gray-300">{p.nombre}</span><span class="shrink-0 rounded bg-red-500/20 px-2 py-0.5 text-xs text-red-400">agotado</span></li>
-            ))}
-          </ul>
-        )}
+        <h2 class="font-display text-lg text-white">Pendientes de moderación</h2>
+        <p class="mt-1 font-display text-3xl text-gold">{stats.pendientes}</p>
+        <a href="/admin/moderacion" class="text-xs text-gold hover:text-gold-light">Revisar →</a>
       </div>
-      <div class="rounded-2xl border border-white/10 bg-ink-2 p-5">
-        <h2 class="mb-3 font-display text-lg text-white">Pendientes de moderación</h2>
-        <p class="font-display text-3xl text-gold">{stats.pendientes}</p>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="rounded-2xl border border-white/10 bg-ink-2 p-5 text-center">
+          <p class="font-display text-2xl text-white">{stats.mensajesSinLeer}</p>
+          <p class="text-xs text-gray-500">Mensajes sin leer</p>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-ink-2 p-5 text-center">
+          <p class="font-display text-2xl text-white">{stats.suscriptores}</p>
+          <p class="text-xs text-gray-500">Suscriptores</p>
+        </div>
       </div>
     </div>
   </div>
@@ -67,34 +201,3 @@ const cards = [
     </ul>
   </div>
 </AdminLayout>
-
-<script is:inline define:vars={{ meses, ventas }}>
-  if (window.Chart) {
-    const canvas = document.querySelector('[data-chart]');
-    if (canvas) {
-      new Chart(canvas, {
-        type: 'line',
-        data: {
-          labels: meses,
-          datasets: [{
-            label: 'Ventas (€)',
-            data: ventas,
-            borderColor: '#c8a255',
-            backgroundColor: 'rgba(200,162,85,0.15)',
-            fill: true,
-            tension: 0.4,
-            pointBackgroundColor: '#e2c078',
-          }],
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { labels: { color: '#9ca3af' } } },
-          scales: {
-            x: { ticks: { color: '#6b7280' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-            y: { ticks: { color: '#6b7280' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-          },
-        },
-      });
-    }
-  }
-</script>

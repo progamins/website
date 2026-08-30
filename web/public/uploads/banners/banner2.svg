@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+    <linearGradient id="g" gradientTransform="rotate(120 .5 .5)"><stop offset="0%" stop-color="#0f2a26"/><stop offset="100%" stop-color="#1f5b54"/></linearGradient>
+    <rect width="1600" height="900" fill="url(#g)"/>
+    <circle cx="1360" cy="180" r="340" fill="#ffffff" opacity="0.06"/>
+    <circle cx="180" cy="760" r="260" fill="#000000" opacity="0.10"/>
+    <rect x="120" y="120" width="1360" height="660" rx="24" fill="#ffffff" opacity="0.04"/>
+    <text x="140" y="120" font-family="'Segoe UI',system-ui,sans-serif" font-size="26" letter-spacing="6" fill="#e6c27a" text-anchor="start">CHOLLO &amp; GLAM</text>
+    <text x="140" y="420" font-family="'Segoe UI',system-ui,sans-serif" font-size="88" font-weight="700" fill="#ffffff" text-anchor="start">Ediciones limitadas</text>
+    <text x="140" y="540" font-family="'Segoe UI',system-ui,sans-serif" font-size="56" font-weight="300" fill="#e6c27a" text-anchor="start">artesanía peruana</text>
+    <g transform="translate(1250,560)"><circle cx="0" cy="0" r="120" fill="#e6c27a" opacity="0.25"/><circle cx="0" cy="0" r="84" fill="#ffffff" opacity="0.3"/><circle cx="0" cy="0" r="50" fill="#e6c27a"/></g></svg>

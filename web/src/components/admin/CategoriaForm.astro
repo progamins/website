@@ -1,0 +1,27 @@
+---
+import type { Categoria } from '../../lib/db';
+interface Props { categoria?: Categoria; }
+const { categoria } = Astro.props;
+---
+<form action="/admin/categorias/guardar" method="post" enctype="multipart/form-data" class="space-y-3">
+  <input type="hidden" name="id" value={categoria?.id ?? ''} />
+  <input type="hidden" name="imagen_actual" value={categoria?.imagen ?? ''} />
+  <input type="hidden" name="icono_actual" value={categoria?.icono ?? ''} />
+
+  <input name="nombre" required placeholder="Nombre de la categoría" value={categoria?.nombre ?? ''} class="w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-white placeholder-gray-500 outline-none focus:border-gold" />
+  <input name="descripcion" placeholder="Descripción (opcional)" value={categoria?.descripcion ?? ''} class="w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-white placeholder-gray-500 outline-none focus:border-gold" />
+
+  <div>
+    <label class="mb-1 block text-xs text-gray-400">Imagen / ilustración</label>
+    {categoria?.imagen && <img src={categoria.imagen} class="mb-2 h-14 rounded-lg object-cover" alt="" />}
+    <input name="imagen" type="file" accept="image/*" class="block w-full text-sm text-gray-400 file:mr-3 file:rounded-full file:border-0 file:bg-gold file:px-4 file:py-2 file:text-xs file:font-semibold file:text-ink" />
+  </div>
+
+  <div>
+    <label class="mb-1 block text-xs text-gray-400">Icono circular</label>
+    {categoria?.icono && <img src={categoria.icono} class="mb-2 h-12 w-12 rounded-full object-cover" alt="" />}
+    <input name="icono" type="file" accept="image/*" class="block w-full text-sm text-gray-400 file:mr-3 file:rounded-full file:border-0 file:bg-gold file:px-4 file:py-2 file:text-xs file:font-semibold file:text-ink" />
+  </div>
+
+  <button class="w-full rounded-full bg-gold px-6 py-2.5 font-semibold text-ink hover:bg-gold-light">{categoria ? 'Guardar cambios' : 'Crear categoría'}</button>
+</form>

@@ -1,8 +1,9 @@
 ---
 import type { Usuario } from '../lib/db';
-import { getLogo } from '../lib/db';
+import { getLogo, getCategorias } from '../lib/db';
 const user = Astro.locals.user as Usuario | null;
 const logo = getLogo();
+const categorias = getCategorias();
 const path = Astro.url.pathname;
 const links = [
   { href: '/', label: 'Inicio' },
@@ -11,6 +12,7 @@ const links = [
   { href: '/contacto', label: 'Contacto' },
 ];
 const isAdmin = user && user.rol !== 'cliente';
+const navLinkCls = (href: string) => path === href ? 'text-gold' : 'text-ink-soft hover:text-gold-dark';
 ---
 <header class="sticky top-0 z-50 border-b border-ink/10 bg-cream/90 backdrop-blur">
   <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
@@ -23,17 +25,24 @@ const isAdmin = user && user.rol !== 'cliente';
       {!logo && <span class="font-display text-2xl tracking-wide text-ink">Chollo <span class="text-gold">&amp;</span> Glam</span>}
     </a>
 
-    <nav class="hidden items-center gap-7 md:flex">
+    <nav class="hidden items-center gap-6 md:flex">
+      <div class="relative" data-catmenu>
+        <button type="button" data-catbtn class="flex items-center gap-1.5 rounded-full bg-ink px-4 py-1.5 text-sm font-semibold text-cream transition hover:bg-ink-3">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h10"/></svg>
+          Categorías
+          <svg class="h-3.5 w-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+        </button>
+      </div>
       {links.map((l) => (
-        <a href={l.href} class:list={["text-sm font-medium tracking-wide transition", path === l.href ? "text-gold" : "text-ink-soft hover:text-gold-dark"]}>{l.label}</a>
+        <a href={l.href} class:list={["text-sm font-medium tracking-wide transition", navLinkCls(l.href)]}>{l.label}</a>
       ))}
       {isAdmin && <a href="/admin" class="text-sm font-medium text-gold transition hover:text-gold-dark">Panel</a>}
     </nav>
 
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-2.5">
       <form action="/buscar" method="get" class="hidden items-center gap-2 rounded-full border border-ink/15 bg-surface px-3.5 py-1.5 lg:flex">
         <svg class="h-4 w-4 text-ink-soft/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        <input name="q" placeholder="Buscar joyas…" class="w-36 bg-transparent text-sm text-ink placeholder-ink-soft/50 outline-none" />
+        <input name="q" placeholder="Buscar productos…" class="w-40 bg-transparent text-sm text-ink placeholder-ink-soft/50 outline-none" />
       </form>
 
       <a href="/carrito" class="relative text-ink-soft transition hover:text-gold" aria-label="Carrito">
@@ -49,17 +58,66 @@ const isAdmin = user && user.rol !== 'cliente';
       ) : (
         <a href="/login" class="hidden rounded-full bg-ink px-4 py-1.5 text-sm font-semibold text-cream transition hover:bg-ink-3 sm:inline-block">Entrar</a>
       )}
+
+      <button type="button" data-catbtn-m class="flex h-9 w-9 items-center justify-center rounded-full border border-ink/15 text-ink-soft transition hover:border-gold hover:text-gold md:hidden" aria-label="Categorías">
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h10"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Panel de categorías -->
+  <div data-catpanel class="absolute inset-x-0 top-full hidden border-t border-ink/10 bg-surface shadow-2xl shadow-ink/10">
+    <div class="mx-auto max-w-7xl px-4 py-5 sm:px-6">
+      <div class="grid grid-cols-3 gap-1 sm:grid-cols-4 lg:grid-cols-5">
+        {categorias.map((c) => (
+          <a href={`/categoria/${c.slug}`} class="group flex items-center gap-2.5 rounded-xl px-2.5 py-2 transition hover:bg-sand">
+            <span class="h-10 w-10 shrink-0 overflow-hidden rounded-full border border-ink/10 bg-sand shadow-sm">
+              {(c.icono ?? c.imagen) && <img src={c.icono ?? c.imagen} alt={c.nombre} loading="lazy" class="h-full w-full object-cover transition duration-300 group-hover:scale-105" />}
+            </span>
+            <span class="truncate text-sm font-medium text-ink-soft group-hover:text-gold-dark">{c.nombre}</span>
+          </a>
+        ))}
+      </div>
     </div>
   </div>
 
   <nav class="flex items-center justify-center gap-6 border-t border-ink/5 px-4 py-2 md:hidden">
     {links.map((l) => (
-      <a href={l.href} class:list={["text-xs font-medium", path === l.href ? "text-gold" : "text-ink-soft"]}>{l.label}</a>
+      <a href={l.href} class:list={["text-xs font-medium", navLinkCls(l.href)]}>{l.label}</a>
     ))}
   </nav>
 </header>
 
 <script>
+  const panel = document.querySelector('[data-catpanel]');
+  const menus = document.querySelectorAll('[data-catmenu]');
+  const btn = document.querySelector('[data-catbtn]');
+  const btnM = document.querySelector('[data-catbtn-m]');
+  let closeTimer;
+
+  const open = () => { if (closeTimer) clearTimeout(closeTimer); panel?.classList.remove('hidden'); };
+  const closeNow = () => { if (closeTimer) clearTimeout(closeTimer); panel?.classList.add('hidden'); };
+  const closeSoon = () => { if (closeTimer) clearTimeout(closeTimer); closeTimer = setTimeout(() => panel?.classList.add('hidden'), 180); };
+  const isOpen = () => panel && !panel.classList.contains('hidden');
+
+  btn?.addEventListener('click', (e) => { e.stopPropagation(); isOpen() ? closeNow() : open(); });
+  btnM?.addEventListener('click', (e) => { e.stopPropagation(); isOpen() ? closeNow() : open(); });
+
+  // Abrir con hover (solo escritorio), cerrando con un pequeño retardo para cruzar el hueco
+  if (window.matchMedia('(min-width: 768px)').matches) {
+    menus.forEach((m) => {
+      m.addEventListener('mouseenter', open);
+      m.addEventListener('mouseleave', closeSoon);
+    });
+    panel?.addEventListener('mouseenter', open);
+    panel?.addEventListener('mouseleave', closeSoon);
+  }
+
+  document.addEventListener('click', (e) => {
+    const t = e.target as HTMLElement;
+    if (!t.closest('[data-catpanel]') && !t.closest('[data-catbtn]') && !t.closest('[data-catbtn-m]')) closeNow();
+  });
+
   const sync = () => {
     const el = document.querySelector('[data-cart-count]');
     if (!el) return;

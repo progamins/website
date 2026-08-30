@@ -8,7 +8,7 @@ db.pragma('foreign_keys = ON');
 
 export interface Categoria {
   id: number; nombre: string; slug: string; descripcion: string | null;
-  imagen: string | null; activa: number;
+  imagen: string | null; icono: string | null; activa: number;
 }
 export interface Coleccion {
   id: number; nombre: string; slug: string; imagen: string | null;
@@ -123,12 +123,38 @@ export const countNotificacionesNoLeidas = () =>
 
 export const getStats = () => ({
   productos: (db.prepare('SELECT COUNT(*) n FROM productos WHERE activo = 1').get() as { n: number }).n,
+  productosTotal: (db.prepare('SELECT COUNT(*) n FROM productos').get() as { n: number }).n,
+  destacados: (db.prepare('SELECT COUNT(*) n FROM productos WHERE destacado = 1 AND activo = 1').get() as { n: number }).n,
   usuarios: (db.prepare('SELECT COUNT(*) n FROM usuarios').get() as { n: number }).n,
+  usuariosAdmin: (db.prepare("SELECT COUNT(*) n FROM usuarios WHERE rol = 'admin'").get() as { n: number }).n,
+  usuariosModerador: (db.prepare("SELECT COUNT(*) n FROM usuarios WHERE rol = 'moderador'").get() as { n: number }).n,
+  usuariosCliente: (db.prepare("SELECT COUNT(*) n FROM usuarios WHERE rol = 'cliente'").get() as { n: number }).n,
   pedidos: (db.prepare('SELECT COUNT(*) n FROM pedidos').get() as { n: number }).n,
+  pedidosActivos: (db.prepare("SELECT COUNT(*) n FROM pedidos WHERE estado NOT IN ('entregado','cancelado')").get() as { n: number }).n,
   ventas: (db.prepare("SELECT COALESCE(SUM(total),0) t FROM pedidos WHERE estado != 'cancelado'").get() as { t: number }).t,
   pendientes: (db.prepare("SELECT COUNT(*) n FROM valoraciones WHERE estado = 'pendiente'").get() as { n: number }).n,
+  mensajesSinLeer: (db.prepare('SELECT COUNT(*) n FROM mensajes WHERE leido = 0').get() as { n: number }).n,
+  suscriptores: (db.prepare('SELECT COUNT(*) n FROM suscriptores').get() as { n: number }).n,
   sinStock: db.prepare('SELECT id, nombre, imagen FROM productos WHERE stock = 0 AND activo = 1').all() as { id: number; nombre: string; imagen: string | null }[],
 });
+
+export const getPedidosPorEstado = () =>
+  db.prepare('SELECT estado, COUNT(*) n FROM pedidos GROUP BY estado').all() as { estado: string; n: number }[];
+
+export const getConteoPorCategoria = () =>
+  db.prepare(`SELECT c.nombre, COUNT(p.id) n FROM categorias c LEFT JOIN productos p ON p.categoria_id = c.id
+    WHERE p.activo = 1 GROUP BY c.id ORDER BY n DESC, c.nombre`).all() as { nombre: string; n: number }[];
+
+export const getTopProductos = (limit = 5) =>
+  db.prepare(`SELECT p.id, p.nombre, p.imagen, p.precio_actual, COALESCE(SUM(pd.cantidad), 0) AS vendidos
+    FROM productos p LEFT JOIN pedido_detalles pd ON pd.producto_id = p.id
+    GROUP BY p.id ORDER BY vendidos DESC, p.num_valoraciones DESC LIMIT ?`).all(limit) as
+    { id: number; nombre: string; imagen: string | null; precio_actual: number; vendidos: number }[];
+
+export const getPedidosRecientes = (limit = 6) =>
+  db.prepare(`SELECT p.id, p.referencia, p.total, p.estado, p.creado_en, u.nombre AS cliente
+    FROM pedidos p LEFT JOIN usuarios u ON u.id = p.usuario_id ORDER BY p.id DESC LIMIT ?`).all(limit) as
+    { id: number; referencia: string; total: number; estado: string; creado_en: string; cliente: string | null }[];
 
 export const getPedidosPorMes = () =>
   db.prepare(`SELECT strftime('%Y-%m', creado_en) mes, COUNT(*) pedidos, SUM(total) total
@@ -161,7 +187,7 @@ export interface Banner {
 export function getBanners(): Banner[] {
   const b = getConfig('banners');
   if (Array.isArray(b) && b.length) return b as Banner[];
-  return [{ tipo: 'video', fondo: '/uploads/productos/banner-video1.mp4', enlace: null }];
+  return [{ tipo: 'imagen', fondo: '/uploads/banners/banner1.svg', enlace: '/novedades' }];
 }
 
 export const formatEUR = (n: number) =>

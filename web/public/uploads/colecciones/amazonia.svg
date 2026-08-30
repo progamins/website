@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000" viewBox="0 0 800 1000">
+    <linearGradient id="g" gradientTransform="rotate(150 .5 .5)"><stop offset="0%" stop-color="#14532d"/><stop offset="100%" stop-color="#5bb98a"/></linearGradient>
+    <rect width="800" height="1000" fill="url(#g)"/>
+    <circle cx="680" cy="200" r="240" fill="#ffffff" opacity="0.08"/>
+    <circle cx="120" cy="840" r="200" fill="#000000" opacity="0.08"/>
+    <g transform="translate(0,0) scale(0.7)" stroke="#ffffff" stroke-opacity="0.3" stroke-width="2" fill="none"><path d="M50 20 L86 56 L50 120 L14 56 Z"/><path d="M14 56 L50 56 L86 56"/><path d="M50 20 L50 56 L50 120"/></g>
+    <text x="400" y="480" font-family="'Segoe UI',system-ui,sans-serif" font-size="54" font-weight="600" fill="#ffffff" text-anchor="middle">Amazonía Mística</text>
+    <text x="400" y="540" font-family="'Segoe UI',system-ui,sans-serif" font-size="17" letter-spacing="5" fill="#ffffff" fill-opacity="0.75" text-anchor="middle">COLECCIÓN CHOLLO &amp; GLAM</text></svg>

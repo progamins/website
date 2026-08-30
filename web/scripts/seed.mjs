@@ -21,50 +21,93 @@ const slug = (s) =>
   s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
     .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
-// Categorías
+// Categorías (20 secciones)
 const cats = [
-  ['Collares', 'Collares artesanales de diseño exclusivo', '/uploads/categorias/collares.jpg'],
-  ['Aretes', 'Aretes elegantes para toda ocasión', '/uploads/categorias/aretes.jpg'],
-  ['Pulseras', 'Pulseras tejidas y de plata 925', '/uploads/categorias/pulseras.jpg'],
-  ['Anillos', 'Anillos de diseño único y artesanal', '/uploads/categorias/anillos.jpg'],
-  ['Premium', 'Piezas exclusivas de colección limitada', '/uploads/categorias/premium.jpg'],
-  ['Ofertas', 'Productos con descuento especial', '/uploads/categorias/ofertas.jpg'],
+  ['collares', 'Collares', 'Collares artesanales de diseño exclusivo', '/uploads/categorias/collares.svg'],
+  ['aretes', 'Aretes', 'Aretes elegantes para toda ocasión', '/uploads/categorias/aretes.svg'],
+  ['pulseras', 'Pulseras', 'Pulseras tejidas y de plata 925', '/uploads/categorias/pulseras.svg'],
+  ['anillos', 'Anillos', 'Anillos de diseño único y artesanal', '/uploads/categorias/anillos.svg'],
+  ['relojes', 'Relojes', 'Relojes clásicos y deportivos', '/uploads/categorias/relojes.svg'],
+  ['accesorios', 'Accesorios', 'Complementos para tu estilo', '/uploads/categorias/accesorios.svg'],
+  ['ropa-hombre', 'Ropa Hombre', 'Prendas cómodas y modernas', '/uploads/categorias/ropa-hombre.svg'],
+  ['ropa-mujer', 'Ropa Mujer', 'Moda femenina de temporada', '/uploads/categorias/ropa-mujer.svg'],
+  ['calzado', 'Calzado', 'Zapatos y zapatillas', '/uploads/categorias/calzado.svg'],
+  ['bolsos', 'Bolsos y Carteras', 'Bolsos, mochilas y carteras', '/uploads/categorias/bolsos.svg'],
+  ['tecnologia', 'Tecnología', 'Gadgets y electrónica', '/uploads/categorias/tecnologia.svg'],
+  ['mandos', 'Mandos y Gaming', 'Mandos y accesorios gamer', '/uploads/categorias/mandos.svg'],
+  ['hogar', 'Hogar y Decoración', 'Detalles para tu hogar', '/uploads/categorias/hogar.svg'],
+  ['mascotas', 'Mascotas', 'Collares, arneses y accesorios', '/uploads/categorias/mascotas.svg'],
+  ['belleza', 'Belleza y Cuidado', 'Cuidado personal y cosmética', '/uploads/categorias/belleza.svg'],
+  ['deportes', 'Deportes', 'Accesorios deportivos', '/uploads/categorias/deportes.svg'],
+  ['bebes', 'Bebés y Niños', 'Ropa y accesorios para peques', '/uploads/categorias/bebes.svg'],
+  ['gafas', 'Gafas y Lentes', 'Protección y estilo', '/uploads/categorias/gafas.svg'],
+  ['papeleria', 'Papelería y Oficina', 'Útiles y organización', '/uploads/categorias/papeleria.svg'],
+  ['ofertas', 'Ofertas', 'Productos con descuento especial', '/uploads/categorias/ofertas.svg'],
 ];
-const insCat = db.prepare('INSERT INTO categorias (nombre, slug, descripcion, imagen) VALUES (?,?,?,?)');
-for (const [n, d, i] of cats) insCat.run(n, slug(n), d, i);
+const insCat = db.prepare('INSERT INTO categorias (nombre, slug, descripcion, imagen, icono) VALUES (?,?,?,?,?)');
+const catId = {};
+const catName = {};
+for (const [s, n, d, i] of cats) { const r = insCat.run(n, s, d, i, `/uploads/categorias/${s}-icon.svg`); catId[s] = Number(r.lastInsertRowid); catName[s] = n; }
 
 // Colecciones
 const cols = [
-  ['Andes Dorados', '/uploads/colecciones/andes_dorados.jpg', 'Inspirada en la majestuosidad de los Andes, esta colección fusiona el oro tradicional con diseños contemporáneos.'],
-  ['Amazonía Mística', '/uploads/colecciones/amazonia.jpg', 'Piezas que capturan la esencia de la selva amazónica con gemas naturales y motivos vegetales.'],
-  ['Costa Brillante', '/uploads/colecciones/costa.jpg', 'Diseños inspirados en la costa peruana con conchas, corales y tonos azules.'],
+  ['Andes Dorados', '/uploads/colecciones/andes-dorados.svg', 'Inspirada en la majestuosidad de los Andes, esta colección fusiona el oro tradicional con diseños contemporáneos.'],
+  ['Amazonía Mística', '/uploads/colecciones/amazonia.svg', 'Piezas que capturan la esencia de la selva amazónica con gemas naturales y motivos vegetales.'],
+  ['Costa Brillante', '/uploads/colecciones/costa.svg', 'Diseños inspirados en la costa peruana con conchas, corales y tonos azules.'],
 ];
 const insCol = db.prepare('INSERT INTO colecciones (nombre, slug, imagen, descripcion) VALUES (?,?,?,?)');
 for (const [n, i, d] of cols) insCol.run(n, slug(n), i, d);
 
-// Productos (imágenes reales existentes en uploads/)
-const prods = [
-  ['Collar Sol de Lima', 1, 1, 45.99, 69.99, 'Collar artesanal inspirado en el sol de Lima, fabricado con plata 925 y baño de oro de 18k. Pieza única con detalles grabados a mano.', 'Más Vendido', '/uploads/productos/collar_sol_lima.jpg', 'Collares', 25, 1],
-  ['Aretes Luna Cusqueña', 2, 1, 29.99, 39.99, 'Aretes con forma de luna creciente, inspirados en la arquitectura colonial de Cusco. Plata 925 con esmalte artesanal.', 'Nuevo', '/uploads/productos/aretes_luna_cusqueña.jpg', 'Aretes', 30, 1],
-  ['Pulsera Río Amazonas', 3, 2, 34.99, 49.99, 'Pulsera tejida a mano con piedras semipreciosas amazónicas. Cada pieza es única y cuenta la historia de la selva.', 'Edición Limitada', '/uploads/productos/pulsera_rio_amazonas.jpg', 'Pulseras', 15, 1],
-  ['Anillo Ocopa Dorado', 4, 1, 59.99, 79.99, 'Anillo de diseño artesanal con baño de oro 18k, inspirado en los tejados de Ocopa. Resistente y elegante.', 'Exclusivo', '/uploads/productos/anillo_ocopa_dorado.jpg', 'Anillos', 20, 1],
-  ['Collar Versalles Andino', 1, 3, 55.0, 85.0, 'Collar premium con cristales de cuarzo rosa y baño de platino. Diseño que fusiona lo barroco con lo andino.', 'Premium', '/uploads/productos/collar_versalles_andino.jpg', 'Collares', 10, 1],
-  ['Aretes Mariposa Nazca', 2, 2, 38.5, 55.0, 'Aretes inspirados en las líneas de Nazca con forma de colibrí. Plata 925 con turquesa natural.', null, '/uploads/productos/aretes_nazca.jpg', 'Aretes', 18, 0],
-  ['Pulsera Machu Picchu', 3, 1, 42.0, 58.0, 'Pulsera con dije del sol naciente y detalles de la ciudadela. Cadenas de plata 925 intercaladas con cuentas de obsidiana.', null, '/uploads/productos/pulsera_machu_picchu.jpg', 'Pulseras', 22, 0],
-  ['Anillo Nazca Star', 4, 3, 48.0, 65.0, 'Anillo con incrustación de lapislázuli y detalles tallados a mano. Inspirado en las constelaciones de Nazca.', null, '/uploads/productos/anillo_nazca_star.jpg', 'Anillos', 12, 0],
-  ['Collar Pacífico Dorado', 1, 3, 62.0, 90.0, 'Collar premium con pendientes de ámbar del Pacífico y cadena de oro 18k. Diseño exclusivo de colección limitada.', 'Premium', '/uploads/productos/collar_pacifico_dorado.jpg', 'Collares', 8, 1],
-  ['Aretes Cielo Arequipa', 2, 1, 32.0, 45.0, 'Aretes con tonos celestes y perlas de agua dulce. Inspirados en los cielos de la Ciudad Blanca.', null, '/uploads/productos/aretes_cielo_arequipa.jpg', 'Aretes', 28, 0],
-  ['Anillo Esmeralda Imperial', 4, 2, 74.99, 99.99, 'Anillo con esmeralda natural engarzada en oro de 18k. Pieza de alta joyería artesanal peruana.', 'Premium', '/uploads/productos/anillo-esmeralda.png', 'Anillos', 6, 1],
-  ['Pulsera Oro 18k Shalom', 3, 3, 89.99, 120.0, 'Pulsera de oro 18k con eslabones tejidos a mano por maestros orfebres. Elegancia atemporal.', 'Exclusivo', '/uploads/productos/pulsera_18k.png', 'Pulseras', 5, 1],
-  ['Pendiente Oro Colonial', 2, 3, 39.99, 54.99, 'Pendientes de oro con motivos coloniales, acabado pulido espejo.', null, '/uploads/productos/pendiente-oro.png', 'Aretes', 0, 0],
-  ['Collar Plata Minimalista', 1, 2, 27.99, null, 'Collar de plata 925 de líneas minimalistas. Ideal para el día a día.', null, '/uploads/productos/collar-plata.png', 'Collares', 40, 0],
+// Joyería (productos con renders PNG reales)
+const joya = [
+  ['Collar Sol de Lima', 'collares', 1, 45.99, 69.99, 'Collar artesanal inspirado en el sol de Lima, fabricado con plata 925 y baño de oro de 18k.', 'Más Vendido', '/uploads/productos/collar-plata.png', 25, 1],
+  ['Aretes Luna Cusqueña', 'aretes', 1, 29.99, 39.99, 'Aretes con forma de luna creciente, inspirados en la arquitectura colonial de Cusco.', 'Nuevo', '/uploads/productos/pendiente_perla.png', 30, 1],
+  ['Pulsera Río Amazonas', 'pulseras', 2, 34.99, 49.99, 'Pulsera tejida a mano con piedras semipreciosas amazónicas.', 'Edición Limitada', '/uploads/productos/pulsera-plata.png', 15, 1],
+  ['Anillo Ocopa Dorado', 'anillos', 1, 59.99, 79.99, 'Anillo de diseño artesanal con baño de oro 18k.', 'Exclusivo', '/uploads/productos/anilli-0.5.png', 20, 1],
+  ['Collar Versalles Andino', 'collares', 3, 55.0, 85.0, 'Collar premium con cristales de cuarzo rosa y baño de platino.', 'Premium', '/uploads/productos/minimalista.png', 10, 1],
+  ['Aretes Mariposa Nazca', 'aretes', 2, 38.5, 55.0, 'Aretes inspirados en las líneas de Nazca con forma de colibrí.', null, '/uploads/productos/pendiente-oro.png', 18, 0],
+  ['Pulsera Machu Picchu', 'pulseras', 1, 42.0, 58.0, 'Pulsera con dije del sol naciente y detalles de la ciudadela.', null, '/uploads/productos/pulsera_18k.png', 22, 0],
+  ['Anillo Nazca Star', 'anillos', 3, 48.0, 65.0, 'Anillo con incrustación de lapislázuli y detalles tallados a mano.', null, '/uploads/productos/estrella.png', 12, 0],
+  ['Collar Pacífico Dorado', 'collares', 3, 62.0, 90.0, 'Collar premium con pendientes de ámbar del Pacífico y cadena de oro 18k.', 'Premium', '/uploads/productos/collar-plata.png', 8, 1],
+  ['Aretes Cielo Arequipa', 'aretes', 1, 32.0, 45.0, 'Aretes con tonos celestes y perlas de agua dulce.', null, '/uploads/productos/pendiente_perla.png', 28, 0],
+  ['Anillo Esmeralda Imperial', 'anillos', 2, 74.99, 99.99, 'Anillo con esmeralda natural engarzada en oro de 18k.', 'Premium', '/uploads/productos/anillo-esmeralda.png', 6, 1],
+  ['Pulsera Oro 18k Shalom', 'pulseras', 3, 89.99, 120.0, 'Pulsera de oro 18k con eslabones tejidos a mano.', 'Exclusivo', '/uploads/productos/pulsera_18k.png', 5, 1],
+  ['Pendiente Oro Colonial', 'aretes', 3, 39.99, 54.99, 'Pendientes de oro con motivos coloniales, acabado pulido espejo.', null, '/uploads/productos/pendiente-oro.png', 0, 0],
+  ['Collar Plata Minimalista', 'collares', 2, 27.99, null, 'Collar de plata 925 de líneas minimalistas.', null, '/uploads/productos/minimalista.png', 40, 0],
 ];
+
+// Otras categorías (marketplace) — imagen ilustrada por categoría
+const DESC = 'Producto seleccionado por su calidad y diseño. Envío disponible a todo el Perú.';
+const extras = [
+  { cat: 'relojes', items: [['Reloj Minimalista Plata', 89.99, 129.99, 'Nuevo', 1], ['Reloj Deportivo Acero', 59.99, 79.99, null, 0], ['Reloj Clásico Cuero', 99.99, 149.99, null, 1]] },
+  { cat: 'accesorios', items: [['Gargantilla Capas Doradas', 24.99, 39.99, 'Nuevo', 1], ['Set Gorro y Bufanda', 19.99, 29.99, null, 0], ['Llavero Cuero Grabado', 9.99, 14.99, null, 0]] },
+  { cat: 'ropa-hombre', items: [['Camiseta Algodón Premium', 24.99, 34.99, 'Nuevo', 1], ['Polera Básica Unisex', 29.99, 39.99, null, 0], ['Casaca Ligera Urbana', 49.99, 69.99, null, 0]] },
+  { cat: 'ropa-mujer', items: [['Blusa Seda Estampada', 27.99, 39.99, 'Nuevo', 1], ['Vestido Verano Floral', 39.99, 59.99, null, 0], ['Cárdigan Tejido Suave', 34.99, 49.99, null, 0]] },
+  { cat: 'calzado', items: [['Zapatillas Urbanas', 45.99, 64.99, 'Nuevo', 1], ['Sandalias Artesanales', 21.99, 32.99, null, 0], ['Botines de Cuero', 69.99, 99.99, null, 0]] },
+  { cat: 'bolsos', items: [['Cartera Tote Grande', 39.99, 59.99, null, 1], ['Bolso Cruzado Compacto', 25.99, 39.99, null, 0], ['Mochila Tela Resistente', 35.99, 49.99, null, 0]] },
+  { cat: 'tecnologia', items: [['Audífonos Inalámbricos', 29.99, 49.99, 'Nuevo', 1], ['Smartwatch Deportivo', 59.99, 89.99, null, 1], ['Power Bank 20.000 mAh', 24.99, 39.99, null, 0]] },
+  { cat: 'mandos', items: [['Mando Inalámbrico Pro', 39.99, 59.99, 'Nuevo', 1], ['Auriculares Gamer RGB', 34.99, 54.99, null, 0], ['Soporte Doble de Mando', 12.99, 19.99, null, 0]] },
+  { cat: 'hogar', items: [['Juego de Sábanas Algodón', 44.99, 69.99, null, 0], ['Lámpara Decorativa', 32.99, 49.99, 'Nuevo', 1], ['Set de Toallas Premium', 27.99, 39.99, null, 0]] },
+  { cat: 'mascotas', items: [['Collar Perro Ajustable', 12.99, 19.99, 'Nuevo', 1], ['Arnés Paseo Acolchado', 18.99, 29.99, null, 0], ['Juguete Interactivo', 9.99, 14.99, null, 0]] },
+  { cat: 'belleza', items: [['Kit Básico de Cuidado', 22.99, 34.99, null, 0], ['Set Brochas Maquillaje', 18.99, 27.99, 'Nuevo', 1], ['Espejo LED Maquillaje', 25.99, 39.99, null, 1]] },
+  { cat: 'deportes', items: [['Botella Deportiva', 9.99, 14.99, null, 0], ['Cuerda de Saltar Pro', 7.99, 12.99, null, 0], ['Mat Yoga Antideslizante', 19.99, 29.99, 'Nuevo', 1]] },
+  { cat: 'bebes', items: [['Conjunto Bebé Algodón', 24.99, 36.99, 'Nuevo', 1], ['Manta Suave de Estrellas', 19.99, 27.99, null, 0], ['Mochila Pequeña Kínder', 22.99, 33.99, null, 0]] },
+  { cat: 'gafas', items: [['Gafas de Sol Clásicas', 15.99, 22.99, null, 0], ['Lentes Blue Light', 13.99, 19.99, 'Nuevo', 1], ['Estuche Lentes Rígido', 6.99, 9.99, null, 0]] },
+  { cat: 'papeleria', items: [['Set de Útiles Escolares', 14.99, 21.99, null, 0], ['Cuaderno Pasta Dura', 8.99, 12.99, null, 0], ['Organizador de Escritorio', 11.99, 16.99, null, 1]] },
+  { cat: 'ofertas', items: [['Pack Collares x3', 19.99, 39.99, 'Oferta', 1], ['Pack Aretes x2', 12.99, 24.99, 'Oferta', 0], ['Set Regalo de Joyas', 29.99, 54.99, 'Oferta', 1]] },
+];
+
+const prods = [];
+for (const [nombre, c, col, pa, po, desc, etq, img, stock, dest] of joya) prods.push([nombre, c, col, pa, po, desc, etq, img, stock, dest]);
+for (const g of extras) for (const [nombre, pa, po, etq, dest] of g.items) prods.push([nombre, g.cat, null, pa, po, DESC, etq, `/uploads/productos/${g.cat}.svg`, 25, dest]);
+
 const insProd = db.prepare(`INSERT INTO productos
   (nombre, slug, categoria_id, coleccion_id, precio_actual, precio_original, descripcion, etiqueta, imagen, tipo, stock, destacado, valoracion, num_valoraciones)
   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
 prods.forEach((p, i) => {
-  const val = (4.2 + (i % 7) * 0.1).toFixed(1);
-  insProd.run(p[0], slug(p[0]), p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], Number(val), 10 + i * 7);
+  const val = (4.0 + (i % 7) * 0.1).toFixed(1);
+  const cs = p[1];
+  insProd.run(p[0], slug(p[0]), catId[cs], p[2], p[3], p[4], p[5], p[6], p[7], catName[cs], p[8], p[9], Number(val), 10 + i * 7);
 });
 
 // Usuarios
@@ -148,9 +191,9 @@ db.prepare('INSERT INTO suscriptores (email) VALUES (?)').run('newsletter-fan@em
 const insConf = db.prepare('INSERT INTO configuracion (clave, valor) VALUES (?,?) ON CONFLICT(clave) DO NOTHING');
 insConf.run('logo', JSON.stringify(null));
 insConf.run('banners', JSON.stringify([
-  { tipo: 'video', fondo: '/uploads/productos/banner-video1.mp4', enlace: null },
-  { tipo: 'imagen', fondo: '/uploads/productos/banner1.png', enlace: '/ofertas' },
-  { tipo: 'imagen', fondo: '/uploads/productos/coleccionE.png', enlace: '/novedades' },
+  { tipo: 'imagen', fondo: '/uploads/banners/banner1.svg', enlace: '/novedades' },
+  { tipo: 'imagen', fondo: '/uploads/banners/banner2.svg', enlace: '/novedades' },
+  { tipo: 'imagen', fondo: '/uploads/banners/banner3.svg', enlace: '/ofertas' },
 ]));
 
 console.log('Base de datos creada en', dbPath);

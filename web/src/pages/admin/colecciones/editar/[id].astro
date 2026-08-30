@@ -1,0 +1,20 @@
+---
+import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import ColeccionForm from '../../../../components/admin/ColeccionForm.astro';
+import { db, type Coleccion } from '../../../../lib/db';
+export const prerender = false;
+const { id } = Astro.params;
+const coleccion = db.prepare('SELECT * FROM colecciones WHERE id = ?').get(Number(id)) as Coleccion | undefined;
+if (!coleccion) return Astro.redirect('/admin/colecciones');
+---
+<AdminLayout title={`Editar · ${coleccion.nombre}`}>
+  <div class="mx-auto max-w-xl">
+    <a href="/admin/colecciones" class="text-xs text-gray-400 hover:text-gold">← Volver a colecciones</a>
+    <div class="mt-4 rounded-2xl border border-white/10 bg-ink-2 p-6">
+      <h2 class="font-display text-lg text-white">Editar colección</h2>
+      <div class="mt-4">
+        <ColeccionForm coleccion={coleccion} />
+      </div>
+    </div>
+  </div>
+</AdminLayout>
