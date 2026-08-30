@@ -1,0 +1,177 @@
+---
+import Layout from '../../components/Layout.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import { getProductoBySlug, getValoracionesAprobadas, getProductosPorCategoria, formatEUR, type Producto } from '../../lib/db';
+export const prerender = false;
+const { slug } = Astro.params;
+const producto = getProductoBySlug(slug!) as Producto | undefined;
+if (!producto) return Astro.redirect('/404');
+const valoraciones = getValoracionesAprobadas(producto.id);
+const relacionados = producto.categoria_id ? getProductosPorCategoria(producto.categoria_id, 1, 4).items.filter((p) => p.id !== producto.id).slice(0, 4) : [];
+const descuento = producto.precio_original && producto.precio_original > producto.precio_actual
+  ? Math.round((1 - producto.precio_actual / producto.precio_original) * 100) : null;
+const user = Astro.locals.user;
+const usuarioId = user ? user.id : null;
+const productoUrl = new URL(Astro.url.pathname, Astro.site ?? 'http://localhost:4321').href;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name: producto.nombre,
+  description: producto.descripcion ?? undefined,
+  image: producto.imagen ? new URL(producto.imagen, productoUrl).href : undefined,
+  sku: String(producto.id),
+  brand: { '@type': 'Brand', name: 'Chollo & Glam' },
+  offers: {
+    '@type': 'Offer',
+    url: productoUrl,
+    priceCurrency: 'PEN',
+    price: producto.precio_actual,
+    availability: producto.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+  },
+  aggregateRating: producto.num_valoraciones > 0 ? {
+    '@type': 'AggregateRating',
+    ratingValue: producto.valoracion,
+    reviewCount: producto.num_valoraciones,
+  } : undefined,
+};
+---
+<Layout title={`${producto.nombre} · Chollo & Glam`} description={producto.descripcion ?? undefined} image={producto.imagen ?? undefined}>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+    <div class="grid gap-10 lg:grid-cols-2">
+      <div class="relative overflow-hidden rounded-3xl border border-ink/10 bg-sand shadow-sm">
+        {producto.imagen
+          ? <img src={producto.imagen} alt={producto.nombre} class="aspect-square w-full object-cover" />
+          : <div class="flex aspect-square items-center justify-center text-ink-soft/50">Sin imagen</div>}
+        {descuento && <span class="absolute left-4 top-4 rounded-full bg-bronce px-3 py-1 text-sm font-bold text-white">-{descuento}%</span>}
+      </div>
+
+      <div>
+        <p class="text-[11px] uppercase tracking-[0.25em] text-gold">{producto.tipo ?? producto.categoria_nombre ?? 'Joyas'}</p>
+        <h1 class="mt-2 font-display text-3xl text-ink sm:text-4xl">{producto.nombre}</h1>
+        <div class="mt-3 flex items-center gap-2 text-sm text-gold">
+          {'★'.repeat(Math.round(producto.valoracion))}
+          <span class="text-ink-soft/60">{producto.valoracion.toFixed(1)} ({producto.num_valoraciones} valoraciones)</span>
+        </div>
+        <div class="mt-5 flex items-baseline gap-3">
+          <span class="font-display text-3xl text-ink">{formatEUR(producto.precio_actual)}</span>
+          {producto.precio_original && <span class="text-lg text-ink-soft/50 line-through">{formatEUR(producto.precio_original)}</span>}
+        </div>
+        <p class="mt-5 leading-relaxed text-ink-soft">{producto.descripcion}</p>
+
+        <div class="mt-5 flex items-center gap-3 text-sm">
+          <span class="text-ink-soft/60">Disponibilidad:</span>
+          {producto.stock > 0
+            ? <span class="font-medium text-ande">En stock ({producto.stock} disponibles)</span>
+            : <span class="font-medium text-bronce">Sin stock</span>}
+        </div>
+
+        <div class="mt-6 flex flex-wrap gap-3">
+          <button data-add-cart={producto.id} data-nombre={producto.nombre} data-imagen={producto.imagen ?? ''} data-precio={producto.precio_actual} disabled={producto.stock === 0}
+            class="flex-1 rounded-full bg-ink px-6 py-3 font-semibold text-cream transition hover:bg-ink-3 disabled:opacity-40 sm:flex-none sm:px-10">
+            Añadir al carrito
+          </button>
+          {usuarioId ? (
+            <button data-fav={producto.id} class="rounded-full border border-gold/60 px-6 py-3 font-semibold text-gold-dark transition hover:bg-gold/10">Favoritos</button>
+          ) : (
+            <a href={`/login?next=/producto/${producto.slug}`} class="rounded-full border border-gold/60 px-6 py-3 font-semibold text-gold-dark transition hover:bg-gold/10">Favoritos</a>
+          )}
+        </div>
+        <p data-add-msg class="mt-3 hidden text-sm text-ande"></p>
+      </div>
+    </div>
+
+    <!-- VALORACIONES -->
+    <div class="mt-16 grid gap-8 lg:grid-cols-3">
+      <div class="lg:col-span-2">
+        <h2 class="font-display text-2xl text-ink">Valoraciones</h2>
+        <div class="mt-4 space-y-4">
+          {valoraciones.length === 0 ? <p class="text-ink-soft/50">Aún no hay valoraciones aprobadas.</p> : valoraciones.map((v) => (
+            <div class="rounded-2xl border border-ink/10 bg-surface p-5 shadow-sm">
+              <div class="flex items-center justify-between">
+                <span class="font-medium text-ink">{v.nombre ?? 'Usuario'}</span>
+                <span class="text-sm text-gold">{'★'.repeat(v.puntuacion)}</span>
+              </div>
+              {v.comentario && <p class="mt-2 text-sm text-ink-soft">{v.comentario}</p>}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div class="h-fit rounded-2xl border border-ink/10 bg-surface p-6 shadow-sm">
+        <h3 class="font-display text-xl text-ink">Deja tu valoración</h3>
+        <p class="mt-1 text-xs text-ink-soft/50">Tu comentario será revisado antes de publicarse.</p>
+        {usuarioId ? (
+          <form data-valoracion class="mt-4 space-y-3">
+            <input type="hidden" name="producto_id" value={producto.id} />
+            <select name="puntuacion" class="w-full rounded-xl border border-ink/15 bg-cream px-3 py-2 text-ink outline-none focus:border-gold">
+              <option value="5">5 ★</option><option value="4">4 ★</option><option value="3">3 ★</option><option value="2">2 ★</option><option value="1">1 ★</option>
+            </select>
+            <textarea name="comentario" rows="3" placeholder="Tu comentario…" class="w-full rounded-xl border border-ink/15 bg-cream px-3 py-2 text-ink placeholder-ink-soft/50 outline-none focus:border-gold"></textarea>
+            <button class="w-full rounded-full bg-ink px-6 py-2.5 font-semibold text-cream hover:bg-ink-3">Enviar</button>
+          </form>
+        ) : (
+          <a href={`/login?next=/producto/${producto.slug}`} class="mt-4 inline-block text-sm font-medium text-gold hover:text-gold-dark">Inicia sesión para valorar →</a>
+        )}
+        <p data-val-msg class="mt-3 hidden text-sm text-ande"></p>
+      </div>
+    </div>
+
+    <!-- RELACIONADOS -->
+    {relacionados.length > 0 && (
+      <div class="mt-16">
+        <h2 class="mb-6 font-display text-2xl text-ink">También te puede gustar</h2>
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {relacionados.map((p) => <ProductCard producto={p} />)}
+        </div>
+      </div>
+    )}
+  </section>
+</Layout>
+
+<script>
+  const cartBtn = document.querySelector('[data-add-cart]');
+  cartBtn?.addEventListener('click', () => {
+    const id = cartBtn.dataset.addCart!;
+    const c = JSON.parse(localStorage.getItem('cg_cart') || '{}');
+    c[id] = (Number(c[id]) || 0) + 1;
+    localStorage.setItem('cg_cart', JSON.stringify(c));
+    window.dispatchEvent(new CustomEvent('cg:cart'));
+    window.dispatchEvent(new CustomEvent('cg:toast', {
+      detail: {
+        nombre: cartBtn.dataset.nombre || 'Producto',
+        imagen: cartBtn.dataset.imagen || '',
+        precio: Number(cartBtn.dataset.precio) || 0,
+        cantidad: c[id],
+      },
+    }));
+    const msg = document.querySelector('[data-add-msg]')!;
+    msg.textContent = 'Añadido al carrito ✓';
+    msg.classList.remove('hidden');
+    setTimeout(() => msg.classList.add('hidden'), 2000);
+  });
+
+  const favBtn = document.querySelector('[data-fav]');
+  favBtn?.addEventListener('click', async () => {
+    const id = favBtn.dataset.fav!;
+    const res = await fetch('/api/favoritos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ producto_id: Number(id) }) });
+    const data = await res.json();
+    const msg = document.querySelector('[data-add-msg]')!;
+    msg.textContent = data.favorito ? 'Añadido a favoritos ✓' : 'Eliminado de favoritos';
+    msg.classList.remove('hidden');
+    setTimeout(() => msg.classList.add('hidden'), 2000);
+  });
+
+  const form = document.querySelector('[data-valoracion]');
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(form as HTMLFormElement);
+    const body = Object.fromEntries(fd.entries());
+    const res = await fetch('/api/valoracion', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const data = await res.json();
+    const msg = document.querySelector('[data-val-msg]')!;
+    msg.textContent = data.ok ? '¡Gracias! Tu valoración está pendiente de revisión.' : data.error;
+    msg.classList.remove('hidden');
+    if (data.ok) form.reset();
+  });
+</script>

@@ -1,0 +1,209 @@
+---
+import Layout from '../components/Layout.astro';
+import { type Usuario } from '../lib/db';
+export const prerender = false;
+const user = Astro.locals.user as Usuario;
+const nombreCompleto = (user.nombre + (user.apellidos ? ' ' + user.apellidos : '')).trim();
+---
+<Layout title="Finalizar compra · Chollo & Glam">
+  <section class="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+    <!-- Pasos -->
+    <div class="mb-8 flex items-center justify-center gap-3 text-sm">
+      <div class="flex items-center gap-2 text-ande"><span class="flex h-6 w-6 items-center justify-center rounded-full bg-ande text-xs font-bold text-white">✓</span>Carrito</div>
+      <span class="h-px w-10 bg-gold/40"></span>
+      <div class="flex items-center gap-2 text-gold"><span class="flex h-6 w-6 items-center justify-center rounded-full bg-gold text-xs font-bold text-white">2</span>Envío y pago</div>
+      <span class="h-px w-10 bg-ink/10"></span>
+      <div class="flex items-center gap-2 text-ink-soft/50"><span class="flex h-6 w-6 items-center justify-center rounded-full bg-sand text-xs font-bold text-ink-soft/60">3</span>Confirmación</div>
+    </div>
+
+    <h1 class="text-center font-display text-4xl text-ink">Finalizar compra</h1>
+
+    <form data-checkout class="mt-10 grid gap-8 lg:grid-cols-5">
+      <!-- Columna izquierda -->
+      <div class="space-y-6 lg:col-span-3">
+        <!-- Datos de envío -->
+        <section class="rounded-2xl border border-ink/10 bg-surface p-6 shadow-sm">
+          <div class="flex items-center gap-3">
+            <span class="flex h-9 w-9 items-center justify-center rounded-full bg-gold/10 font-display text-gold">1</span>
+            <h2 class="font-display text-xl text-ink">Datos de envío</h2>
+          </div>
+          <div class="mt-5 grid gap-4 sm:grid-cols-2">
+            <div class="sm:col-span-2">
+              <label class="mb-1 block text-sm text-ink-soft/70">Nombre completo *</label>
+              <input name="nombre_envio" required value={nombreCompleto} placeholder="Nombre y apellidos" class="w-full rounded-xl border border-ink/15 bg-cream px-4 py-3 text-ink placeholder-ink-soft/50 outline-none focus:border-gold" />
+            </div>
+            <div class="sm:col-span-2">
+              <label class="mb-1 block text-sm text-ink-soft/70">Dirección *</label>
+              <input name="direccion_envio" required placeholder="Calle, número, piso…" class="w-full rounded-xl border border-ink/15 bg-cream px-4 py-3 text-ink placeholder-ink-soft/50 outline-none focus:border-gold" />
+            </div>
+            <div>
+              <label class="mb-1 block text-sm text-ink-soft/70">Ciudad *</label>
+              <input name="ciudad_envio" required placeholder="Ciudad" class="w-full rounded-xl border border-ink/15 bg-cream px-4 py-3 text-ink placeholder-ink-soft/50 outline-none focus:border-gold" />
+            </div>
+            <div>
+              <label class="mb-1 block text-sm text-ink-soft/70">Código postal *</label>
+              <input name="codigo_postal" required placeholder="00000" class="w-full rounded-xl border border-ink/15 bg-cream px-4 py-3 text-ink placeholder-ink-soft/50 outline-none focus:border-gold" />
+            </div>
+            <div class="sm:col-span-2">
+              <label class="mb-1 block text-sm text-ink-soft/70">Teléfono</label>
+              <input name="telefono_envio" value={user.telefono ?? ''} placeholder="+51 900 000 000" class="w-full rounded-xl border border-ink/15 bg-cream px-4 py-3 text-ink placeholder-ink-soft/50 outline-none focus:border-gold" />
+            </div>
+            <div class="sm:col-span-2">
+              <label class="mb-1 block text-sm text-ink-soft/70">Notas de la entrega (opcional)</label>
+              <textarea name="notas" rows="2" placeholder="Indicaciones para el repartidor…" class="w-full rounded-xl border border-ink/15 bg-cream px-4 py-3 text-ink placeholder-ink-soft/50 outline-none focus:border-gold"></textarea>
+            </div>
+          </div>
+        </section>
+
+        <!-- Método de pago -->
+        <section class="rounded-2xl border border-ink/10 bg-surface p-6 shadow-sm">
+          <div class="flex items-center gap-3">
+            <span class="flex h-9 w-9 items-center justify-center rounded-full bg-gold/10 font-display text-gold">2</span>
+            <h2 class="font-display text-xl text-ink">Método de pago</h2>
+          </div>
+
+          <div class="mt-5 grid gap-3 sm:grid-cols-3">
+            <label class="cursor-pointer rounded-xl border border-ink/10 p-4 transition has-[:checked]:border-gold has-[:checked]:bg-gold/5">
+              <input type="radio" name="metodo_pago" value="tarjeta" class="peer sr-only" checked />
+              <div class="flex items-center gap-2">
+                <svg class="h-6 w-6 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><rect x="2" y="5" width="20" height="14" rx="2"/><path stroke-linecap="round" d="M2 10h20"/></svg>
+                <span class="font-medium text-ink">Tarjeta</span>
+              </div>
+            </label>
+            <label class="cursor-pointer rounded-xl border border-ink/10 p-4 transition has-[:checked]:border-gold has-[:checked]:bg-gold/5">
+              <input type="radio" name="metodo_pago" value="paypal" class="peer sr-only" />
+              <div class="flex items-center gap-2">
+                <svg class="h-6 w-6 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21l1.5-6h3a4 4 0 004-4 4 4 0 00-4-4H8l-1.5 14"/></svg>
+                <span class="font-medium text-ink">PayPal</span>
+              </div>
+            </label>
+            <label class="cursor-pointer rounded-xl border border-ink/10 p-4 transition has-[:checked]:border-gold has-[:checked]:bg-gold/5">
+              <input type="radio" name="metodo_pago" value="transferencia" class="peer sr-only" />
+              <div class="flex items-center gap-2">
+                <svg class="h-6 w-6 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m-4 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                <span class="font-medium text-ink">Transferencia</span>
+              </div>
+            </label>
+          </div>
+
+          <!-- Detalle tarjeta (demo) -->
+          <div data-pay-tarjeta class="mt-4 grid gap-4 rounded-xl border border-ink/10 bg-sand/60 p-4 sm:grid-cols-2">
+            <div class="sm:col-span-2">
+              <label class="mb-1 block text-sm text-ink-soft/70">Número de tarjeta</label>
+              <input name="tarjeta_numero" placeholder="0000 0000 0000 0000" inputmode="numeric" class="w-full rounded-xl border border-ink/15 bg-surface px-4 py-3 text-ink placeholder-ink-soft/50 outline-none focus:border-gold" />
+            </div>
+            <div>
+              <label class="mb-1 block text-sm text-ink-soft/70">Caducidad</label>
+              <input name="tarjeta_cad" placeholder="MM/AA" class="w-full rounded-xl border border-ink/15 bg-surface px-4 py-3 text-ink placeholder-ink-soft/50 outline-none focus:border-gold" />
+            </div>
+            <div>
+              <label class="mb-1 block text-sm text-ink-soft/70">CVC</label>
+              <input name="tarjeta_cvc" placeholder="123" inputmode="numeric" class="w-full rounded-xl border border-ink/15 bg-surface px-4 py-3 text-ink placeholder-ink-soft/50 outline-none focus:border-gold" />
+            </div>
+            <p class="sm:col-span-2 text-xs text-ink-soft/50">Pago de demostración: no se realiza ningún cargo real.</p>
+          </div>
+        </section>
+      </div>
+
+      <!-- Resumen -->
+      <aside class="h-fit space-y-4 lg:col-span-2">
+        <div class="rounded-2xl border border-ink/10 bg-surface p-6 shadow-sm">
+          <h3 class="font-display text-lg text-ink">Tu pedido</h3>
+          <div class="mt-4 max-h-72 space-y-3 overflow-y-auto pr-1" data-summary-items>
+            <p class="text-sm text-ink-soft/50">Cargando…</p>
+          </div>
+          <div class="mt-4 space-y-2 border-t border-ink/10 pt-4 text-sm">
+            <div class="flex justify-between text-ink-soft"><span>Subtotal</span><span data-summary-subtotal>S/ 0,00</span></div>
+            <div class="flex justify-between text-ink-soft"><span>Envío</span><span class="text-ande">Gratis</span></div>
+            <div class="flex justify-between border-t border-ink/10 pt-3 font-display text-lg text-ink"><span>Total</span><span data-summary-total>S/ 0,00</span></div>
+          </div>
+          <button type="submit" class="mt-5 w-full rounded-full bg-ink px-6 py-3.5 font-semibold text-cream transition hover:bg-ink-3 disabled:opacity-40" disabled>Confirmar pedido</button>
+          <p data-checkout-error class="mt-3 hidden text-center text-sm text-bronce"></p>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 text-center text-[11px] text-ink-soft/60">
+          <div class="rounded-xl border border-ink/10 bg-surface p-3"><div class="mx-auto mb-1 flex h-8 w-8 items-center justify-center rounded-full bg-gold/10 text-gold"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg></div>Pago seguro</div>
+          <div class="rounded-xl border border-ink/10 bg-surface p-3"><div class="mx-auto mb-1 flex h-8 w-8 items-center justify-center rounded-full bg-gold/10 text-gold"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17l6-6-6-6"/></svg></div>Envío gratis</div>
+          <div class="rounded-xl border border-ink/10 bg-surface p-3"><div class="mx-auto mb-1 flex h-8 w-8 items-center justify-center rounded-full bg-gold/10 text-gold"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M5 9a7 7 0 1113 1 8 8 0 01-7 7"/></svg></div>Devoluciones</div>
+        </div>
+      </aside>
+    </form>
+  </section>
+</Layout>
+
+<script>
+  const fmt = (n: number) => new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(n);
+  let items: any[] = [];
+  const form = document.querySelector('[data-checkout]') as HTMLFormElement;
+
+  async function load() {
+    const cart = JSON.parse(localStorage.getItem('cg_cart') || '{}');
+    const ids = Object.keys(cart).filter((k) => cart[k] > 0).map(Number);
+    if (!ids.length) { window.location.href = '/carrito'; return; }
+    const res = await fetch('/api/productos?ids=' + ids.join(','));
+    const prods = await res.json();
+    items = prods.map((p: any) => ({ ...p, qty: Number(cart[p.id]) })).filter((p: any) => p.qty > 0);
+    render();
+  }
+
+  function render() {
+    const box = document.querySelector('[data-summary-items]')!;
+    box.innerHTML = items.map((p) => `
+      <div class="flex items-center gap-3">
+        <div class="relative shrink-0">
+          <img src="${p.imagen || ''}" class="h-14 w-14 rounded-xl object-cover bg-sand" onerror="this.style.visibility='hidden'" alt=""/>
+          <span class="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-gold px-1 text-[10px] font-bold text-white">${p.qty}</span>
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="truncate text-sm font-medium text-ink">${p.nombre}</p>
+          <p class="text-xs text-gold">${fmt(p.precio_actual)}</p>
+        </div>
+        <span class="text-sm text-ink-soft">${fmt(p.precio_actual * p.qty)}</span>
+      </div>`).join('');
+    const total = items.reduce((s, p) => s + p.precio_actual * p.qty, 0);
+    (document.querySelector('[data-summary-subtotal]') as HTMLElement).textContent = fmt(total);
+    (document.querySelector('[data-summary-total]') as HTMLElement).textContent = fmt(total);
+    const submit = form.querySelector('[type=submit]') as HTMLButtonElement;
+    if (submit) submit.disabled = items.length === 0;
+  }
+
+  form.querySelectorAll('[name=metodo_pago]').forEach((r) => {
+    r.addEventListener('change', () => {
+      const box = document.querySelector('[data-pay-tarjeta]') as HTMLElement;
+      if (box) box.style.display = (form.querySelector('[name=metodo_pago]:checked') as HTMLInputElement).value === 'tarjeta' ? '' : 'none';
+    });
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const err = document.querySelector('[data-checkout-error]') as HTMLElement;
+    const submit = form.querySelector('[type=submit]') as HTMLButtonElement;
+    const fd = new FormData(form);
+    const metodo = (fd.get('metodo_pago') as string) || 'tarjeta';
+    const body: any = {
+      lineas: items.map((p) => ({ producto_id: p.id, cantidad: p.qty, precio: p.precio_actual })),
+      nombre_envio: fd.get('nombre_envio'), direccion_envio: fd.get('direccion_envio'),
+      ciudad_envio: fd.get('ciudad_envio'), codigo_postal: fd.get('codigo_postal'),
+      telefono_envio: fd.get('telefono_envio'), notas: fd.get('notas'), metodo_pago: metodo,
+    };
+    err.classList.add('hidden');
+    submit.disabled = true; submit.textContent = 'Procesando…';
+    try {
+      const res = await fetch('/api/carrito/crear', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (data.ok) {
+        localStorage.removeItem('cg_cart');
+        window.dispatchEvent(new CustomEvent('cg:cart'));
+        window.location.href = '/checkout/confirmacion?ref=' + encodeURIComponent(data.referencia) + '&total=' + data.total;
+      } else {
+        throw new Error(data.error || 'Error al procesar el pedido');
+      }
+    } catch (ex: any) {
+      err.textContent = ex.message;
+      err.classList.remove('hidden');
+      submit.disabled = false; submit.textContent = 'Confirmar pedido';
+    }
+  });
+
+  load();
+</script>

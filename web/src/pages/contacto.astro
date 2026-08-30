@@ -1,0 +1,36 @@
+---
+import Layout from '../components/Layout.astro';
+---
+<Layout title="Contacto · Chollo & Glam">
+  <section class="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+    <div class="mx-auto max-w-2xl text-center">
+      <p class="text-[11px] uppercase tracking-[0.25em] text-gold">Estamos para ayudarte</p>
+      <h1 class="mt-2 font-display text-4xl text-ink">Contacto</h1>
+      <p class="mt-3 text-ink-soft/70">¿Tienes alguna duda sobre nuestros productos o tu pedido? Escríbenos y te responderemos a la brevedad.</p>
+    </div>
+    <form data-contact class="mx-auto mt-10 grid max-w-2xl gap-4">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <input name="nombre" required placeholder="Nombre" class="w-full rounded-xl border border-ink/15 bg-surface px-4 py-3 text-ink placeholder-ink-soft/50 outline-none focus:border-gold" />
+        <input name="email" required type="email" placeholder="Email" class="w-full rounded-xl border border-ink/15 bg-surface px-4 py-3 text-ink placeholder-ink-soft/50 outline-none focus:border-gold" />
+      </div>
+      <input name="asunto" placeholder="Asunto (opcional)" class="w-full rounded-xl border border-ink/15 bg-surface px-4 py-3 text-ink placeholder-ink-soft/50 outline-none focus:border-gold" />
+      <textarea name="mensaje" required rows="5" placeholder="Tu mensaje…" class="w-full rounded-xl border border-ink/15 bg-surface px-4 py-3 text-ink placeholder-ink-soft/50 outline-none focus:border-gold"></textarea>
+      <button class="rounded-full bg-ink px-6 py-3 font-semibold text-cream hover:bg-ink-3">Enviar mensaje</button>
+    </form>
+    <p data-contact-msg class="mx-auto mt-4 hidden max-w-2xl text-center text-sm text-ande"></p>
+  </section>
+</Layout>
+
+<script>
+  const form = document.querySelector('[data-contact]');
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const body = Object.fromEntries(new FormData(form as HTMLFormElement).entries());
+    const res = await fetch('/api/contacto', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const data = await res.json();
+    const msg = document.querySelector('[data-contact-msg]')!;
+    msg.textContent = data.ok ? '¡Mensaje enviado! Te responderemos pronto.' : 'Hubo un error. Inténtalo de nuevo.';
+    msg.classList.remove('hidden');
+    if (data.ok) form.reset();
+  });
+</script>

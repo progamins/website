@@ -1,0 +1,32 @@
+---
+import Layout from '../../components/Layout.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import { getCategoriaBySlug, getProductosPorCategoria } from '../../lib/db';
+export const prerender = false;
+const { slug } = Astro.params;
+const page = Number(Astro.url.searchParams.get('p') || 1);
+const categoria = getCategoriaBySlug(slug!);
+if (!categoria) return Astro.redirect('/404');
+const { items, total, totalPages } = getProductosPorCategoria(categoria.id, page, 12);
+const mk = (p: number) => `/categoria/${slug}?p=${p}`;
+---
+<Layout title={`${categoria.nombre} · Chollo & Glam`}>
+  <section class="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+    <div class="mb-10">
+      <a href="/" class="text-xs text-ink-soft/60 hover:text-gold">← Inicio</a>
+      <h1 class="mt-2 font-display text-4xl text-ink">{categoria.nombre}</h1>
+      {categoria.descripcion && <p class="mt-3 max-w-2xl text-ink-soft/70">{categoria.descripcion}</p>}
+      <p class="mt-2 text-sm text-ink-soft/50">{total} productos</p>
+    </div>
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {items.map((p) => <ProductCard producto={p} />)}
+    </div>
+    {totalPages > 1 && (
+      <div class="mt-10 flex items-center justify-center gap-2">
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+          <a href={mk(p)} class:list={["flex h-9 w-9 items-center justify-center rounded-full text-sm", p === page ? "bg-ink font-semibold text-cream" : "border border-ink/15 text-ink-soft hover:border-gold hover:text-gold"]}>{p}</a>
+        ))}
+      </div>
+    )}
+  </section>
+</Layout>

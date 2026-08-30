@@ -12,14 +12,14 @@ define('ADMIN_ACCESS', true);
 session_start();
 
 // Include database connection
-$conn = require_once 'db_config.php';
+require_once 'db_config.php';
 
 // Authentication check
 // Uncomment this section when ready to implement proper authentication
-// if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-//     header('Location: login.php');
-//     exit;
-// }
+if (!isset($_SESSION["admin_logged_in"]) || $_SESSION["admin_logged_in"] !== true) {
+    header("Location: login.php");
+    exit;
+}
 
 // Function to safely escape values for SQL queries
 function escape($conn, $value)
@@ -255,7 +255,7 @@ $productos = mysqli_fetch_all($result_products, MYSQLI_ASSOC);
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="colecciones.php">
+                        <a class="nav-link" href="coleccion.php">
                             <i class="fas fa-layer-group me-1"></i> Colecciones
                         </a>
                     </li>

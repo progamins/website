@@ -1,0 +1,22 @@
+---
+import Layout from '../components/Layout.astro';
+import ProductCard from '../components/ProductCard.astro';
+import { buscarProductos } from '../lib/db';
+const q = (Astro.url.searchParams.get('q') ?? '').trim();
+const resultados = q ? buscarProductos(q) : [];
+---
+<Layout title={`Búsqueda · Chollo & Glam`}>
+  <section class="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+    <h1 class="font-display text-3xl text-ink">Resultados de búsqueda</h1>
+    <form action="/buscar" method="get" class="mt-4 flex max-w-xl gap-2">
+      <input name="q" value={q} placeholder="Buscar productos…" class="flex-1 rounded-full border border-ink/15 bg-surface px-5 py-2.5 text-ink placeholder-ink-soft/50 outline-none focus:border-gold" />
+      <button class="rounded-full bg-ink px-6 py-2.5 font-semibold text-cream hover:bg-ink-3">Buscar</button>
+    </form>
+    <p class="mt-6 text-sm text-ink-soft/70">{q ? `${resultados.length} resultado(s) para "${q}"` : 'Escribe algo para buscar.'}</p>
+    {resultados.length > 0 && (
+      <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {resultados.map((p) => <ProductCard producto={p} />)}
+      </div>
+    )}
+  </section>
+</Layout>

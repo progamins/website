@@ -1,0 +1,77 @@
+---
+import { getBanners, type Banner } from '../lib/db';
+const banners = getBanners();
+---
+{
+  banners.length > 0 && (
+    <section data-carousel class="group relative h-[52vh] w-full overflow-hidden bg-ink-2 sm:h-[68vh] lg:h-[74vh]" aria-label="Banners destacados">
+      <div data-track class="flex h-full transition-transform duration-700 ease-out">
+        {banners.map((b, i) => (
+          <div data-slide class="relative h-full w-full shrink-0">
+            {b.tipo === 'video' && b.fondo ? (
+              <video class="h-full w-full object-cover" autoplay muted loop playsinline preload="metadata">
+                <source src={b.fondo} type="video/mp4" />
+              </video>
+            ) : b.tipo === 'imagen' && b.fondo ? (
+              <img src={b.fondo} alt={`Banner ${i + 1}`} class="h-full w-full object-cover" />
+            ) : (
+              <div class="h-full w-full bg-gradient-to-br from-ink-3 to-ink-2"></div>
+            )}
+            {b.enlace && <a href={b.enlace} class="absolute inset-0" aria-label={`Ir a ${b.enlace}`}></a>}
+          </div>
+        ))}
+      </div>
+
+      {banners.length > 1 && (
+        <>
+          <button data-prev aria-label="Banner anterior"
+            class="absolute left-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-ink/40 text-white opacity-0 backdrop-blur transition hover:bg-ink/70 group-hover:opacity-100">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <button data-next aria-label="Banner siguiente"
+            class="absolute right-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-ink/40 text-white opacity-0 backdrop-blur transition hover:bg-ink/70 group-hover:opacity-100">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          </button>
+          <div class="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 gap-2">
+            {banners.map((_, i) => (
+              <button data-dot={i} aria-label={`Ir al banner ${i + 1}`}
+                class:list={["h-2 w-2 rounded-full transition-all", i === 0 ? "bg-gold-light w-5" : "bg-white/50 hover:bg-white/80"]}></button>
+            ))}
+          </div>
+        </>
+      )}
+    </section>
+  )
+}
+
+<script>
+  const root = document.querySelector('[data-carousel]');
+  if (root) {
+    const track = root.querySelector('[data-track]') as HTMLElement;
+    const slides = Array.from(root.querySelectorAll('[data-slide]')) as HTMLElement[];
+    const dots = Array.from(root.querySelectorAll('[data-dot]')) as HTMLButtonElement[];
+    const prev = root.querySelector('[data-prev]');
+    const next = root.querySelector('[data-next]');
+    let index = 0;
+    let timer: number | undefined;
+    const total = slides.length;
+    if (total > 1) {
+      const go = (i: number) => {
+        index = ((i % total) + total) % total;
+        track.style.transform = `translateX(-${index * 100}%)`;
+        dots.forEach((d, j) => {
+          d.className = j === index ? 'h-2 w-5 rounded-full bg-gold-light transition-all' : 'h-2 w-2 rounded-full bg-white/50 hover:bg-white/80 transition-all';
+        });
+      };
+      const start = () => { timer = window.setInterval(() => go(index + 1), 5000); };
+      const stop = () => { if (timer) clearInterval(timer); };
+      prev?.addEventListener('click', () => { stop(); go(index - 1); start(); });
+      next?.addEventListener('click', () => { stop(); go(index + 1); start(); });
+      dots.forEach((d, j) => d.addEventListener('click', () => { stop(); go(j); start(); }));
+      root.addEventListener('mouseenter', stop);
+      root.addEventListener('mouseleave', start);
+      root.addEventListener('touchstart', stop, { passive: true });
+      start();
+    }
+  }
+</script>

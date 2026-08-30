@@ -1,0 +1,56 @@
+---
+import AdminLayout from '../../../components/admin/AdminLayout.astro';
+import { db, formatEUR, type Producto } from '../../../lib/db';
+const q = (Astro.url.searchParams.get('q') ?? '').trim();
+const productos = q
+  ? db.prepare(`SELECT p.*, c.nombre AS categoria_nombre FROM productos p LEFT JOIN categorias c ON c.id=p.categoria_id WHERE p.nombre LIKE ? ORDER BY p.id DESC`).all(`%${q}%`) as Producto[]
+  : db.prepare(`SELECT p.*, c.nombre AS categoria_nombre FROM productos p LEFT JOIN categorias c ON c.id=p.categoria_id ORDER BY p.id DESC`).all() as Producto[];
+---
+<AdminLayout title="Productos">
+  <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <form action="/admin/productos" method="get" class="flex gap-2">
+      <input name="q" value={q} placeholder="Buscar producto…" class="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm text-white placeholder-gray-500 outline-none focus:border-gold" />
+      <button class="rounded-full bg-gold px-4 py-2 text-sm font-semibold text-ink hover:bg-gold-light">Buscar</button>
+    </form>
+    <a href="/admin/productos/crear" class="rounded-full bg-gold px-5 py-2 text-sm font-semibold text-ink hover:bg-gold-light">+ Nuevo producto</a>
+  </div>
+
+  <div class="overflow-x-auto rounded-2xl border border-white/10 bg-ink-2">
+    <table class="w-full text-left text-sm">
+      <thead class="border-b border-white/10 text-xs uppercase tracking-wider text-gray-400">
+        <tr>
+          <th class="px-4 py-3">Producto</th><th class="px-4 py-3">Categoría</th><th class="px-4 py-3">Precio</th><th class="px-4 py-3">Stock</th><th class="px-4 py-3">Estado</th><th class="px-4 py-3 text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-white/5">
+        {productos.map((p) => (
+          <tr class="hover:bg-white/5">
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-3">
+                <img src={p.imagen ?? ''} class="h-10 w-10 rounded-lg object-cover bg-white/5" onerror="this.style.visibility='hidden'" alt="" />
+                <div>
+                  <p class="font-medium text-white">{p.nombre}</p>
+                  <p class="text-xs text-gold">{p.etiqueta ?? ''}</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-3 text-gray-400">{p.categoria_nombre ?? '—'}</td>
+            <td class="px-4 py-3 text-gray-200">{formatEUR(p.precio_actual)}{p.precio_original && <span class="ml-1 text-gray-500 line-through">{formatEUR(p.precio_original)}</span>}</td>
+            <td class="px-4 py-3"><span class:list={["rounded px-2 py-0.5 text-xs", p.stock > 0 ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"]}>{p.stock > 0 ? p.stock : 'agotado'}</span></td>
+            <td class="px-4 py-3">
+              <span class:list={["rounded px-2 py-0.5 text-xs", p.activo ? "bg-green-500/20 text-green-400" : "bg-gray-500/20 text-gray-400"]}>{p.activo ? 'Activo' : 'Inactivo'}</span>
+              {p.destacado === 1 && <span class="ml-1 rounded bg-gold/20 px-2 py-0.5 text-xs text-gold">destacado</span>}
+            </td>
+            <td class="px-4 py-3">
+              <div class="flex justify-end gap-2 text-xs">
+                <a href={`/admin/productos/editar/${p.id}`} class="rounded-full border border-white/15 px-3 py-1.5 text-gray-300 hover:border-gold hover:text-gold">Editar</a>
+                <form action="/admin/productos/toggle" method="post"><input type="hidden" name="id" value={p.id} /><button class="rounded-full border border-white/15 px-3 py-1.5 text-gray-300 hover:border-blue-400 hover:text-blue-400">{p.activo ? 'Desactivar' : 'Activar'}</button></form>
+                <form action="/admin/productos/eliminar" method="post" onsubmit="return confirm('¿Eliminar este producto?')"><input type="hidden" name="id" value={p.id} /><button class="rounded-full border border-white/15 px-3 py-1.5 text-gray-300 hover:border-red-400 hover:text-red-400">Eliminar</button></form>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</AdminLayout>

@@ -1,0 +1,56 @@
+---
+import AdminLayout from '../../../components/admin/AdminLayout.astro';
+import { db, formatEUR } from '../../../lib/db';
+const ofertas = db.prepare(`SELECT o.*, COUNT(pof.id) AS num_productos FROM ofertas_flash o LEFT JOIN productos_oferta_flash pof ON pof.oferta_id=o.id GROUP BY o.id ORDER BY o.id DESC`).all() as any[];
+const productos = db.prepare('SELECT id, nombre, precio_actual, imagen FROM productos WHERE activo = 1 ORDER BY nombre').all() as any[];
+const finValor = new Date(Date.now() + 24 * 3600 * 1000).toISOString().slice(0, 16);
+---
+<AdminLayout title="Ofertas Flash">
+  <div class="grid gap-6 lg:grid-cols-3">
+    <form action="/admin/ofertas/guardar" method="post" class="h-fit rounded-2xl border border-white/10 bg-ink-2 p-6">
+      <h2 class="font-display text-lg text-white">Nueva oferta flash</h2>
+      <div class="mt-4 space-y-3">
+        <input name="titulo" placeholder="Título" value="Oferta Flash" class="w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-white placeholder-gray-500 outline-none focus:border-gold" />
+        <input name="tiempo_fin" type="datetime-local" required value={finValor} class="w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-white outline-none focus:border-gold [color-scheme:dark]" />
+        <div class="max-h-56 space-y-1 overflow-y-auto rounded-xl border border-white/15 p-3">
+          <p class="mb-2 text-xs uppercase tracking-wider text-gray-400">Selecciona productos</p>
+          {productos.map((p) => (
+            <label class="flex cursor-pointer items-center gap-2 py-1 text-sm text-gray-300">
+              <input name="producto_ids" type="checkbox" value={p.id} class="h-4 w-4 accent-gold" />
+              <img src={p.imagen ?? ''} class="h-7 w-7 rounded object-cover" onerror="this.style.visibility='hidden'" alt="" />
+              <span class="flex-1 truncate">{p.nombre}</span>
+              <span class="text-xs text-gold">{formatEUR(p.precio_actual)}</span>
+            </label>
+          ))}
+        </div>
+        <button class="w-full rounded-full bg-gold px-6 py-2.5 font-semibold text-ink hover:bg-gold-light">Crear oferta</button>
+      </div>
+    </form>
+
+    <div class="overflow-hidden rounded-2xl border border-white/10 bg-ink-2 lg:col-span-2">
+      <table class="w-full text-left text-sm">
+        <thead class="border-b border-white/10 text-xs uppercase tracking-wider text-gray-400">
+          <tr><th class="px-4 py-3">Título</th><th class="px-4 py-3">Finaliza</th><th class="px-4 py-3">Productos</th><th class="px-4 py-3">Estado</th><th class="px-4 py-3 text-right">Acciones</th></tr>
+        </thead>
+        <tbody class="divide-y divide-white/5">
+          {ofertas.map((o) => {
+            const expirada = new Date(o.tiempo_fin).getTime() < Date.now();
+            return (
+              <tr class="hover:bg-white/5">
+                <td class="px-4 py-3 font-medium text-white">{o.titulo}</td>
+                <td class="px-4 py-3 text-gray-400">{new Date(o.tiempo_fin).toLocaleString('es-ES')}</td>
+                <td class="px-4 py-3 text-gray-300">{o.num_productos}</td>
+                <td class="px-4 py-3">
+                  <span class:list={["rounded px-2 py-0.5 text-xs", o.activa && !expirada ? "bg-green-500/20 text-green-400" : "bg-gray-500/20 text-gray-400"]}>{o.activa && !expirada ? 'Activa' : 'Inactiva'}</span>
+                </td>
+                <td class="px-4 py-3 text-right">
+                  <form action="/admin/ofertas/eliminar" method="post" onsubmit="return confirm('¿Eliminar oferta?')"><input type="hidden" name="id" value={o.id} /><button class="rounded-full border border-white/15 px-3 py-1.5 text-xs text-gray-300 hover:border-red-400 hover:text-red-400">Eliminar</button></form>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</AdminLayout>

@@ -1,0 +1,107 @@
+---
+import Layout from '../components/Layout.astro';
+import { formatEUR } from '../lib/db';
+const user = Astro.locals.user;
+---
+<Layout title="Carrito · Chollo & Glam">
+  <section class="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+    <h1 class="mb-8 font-display text-3xl text-ink">Tu carrito</h1>
+    <div class="grid gap-8 lg:grid-cols-3">
+      <div class="lg:col-span-2 space-y-4" data-cart-items>
+        <p class="text-ink-soft/50">Cargando…</p>
+      </div>
+      <div class="h-fit rounded-2xl border border-ink/10 bg-surface p-6 shadow-sm">
+        <h2 class="font-display text-xl text-ink">Resumen</h2>
+        <div class="mt-4 flex justify-between text-ink-soft"><span>Subtotal</span><span data-cart-subtotal>S/ 0,00</span></div>
+        <div class="mt-2 flex justify-between text-ink-soft"><span>Envío</span><span class="text-ande">Gratis</span></div>
+        <div class="mt-4 flex justify-between border-t border-ink/10 pt-4 font-display text-lg text-ink"><span>Total</span><span data-cart-total>S/ 0,00</span></div>
+        <div class="mt-6">
+          {user ? (
+            <a href="/checkout" data-checkout class="block w-full rounded-full bg-ink px-6 py-3 text-center font-semibold text-cream hover:bg-ink-3 disabled:pointer-events-none disabled:opacity-40">Tramitar pedido</a>
+          ) : (
+            <a href="/login?next=/carrito" class="block w-full rounded-full bg-ink px-6 py-3 text-center font-semibold text-cream hover:bg-ink-3">Inicia sesión para comprar</a>
+          )}
+        </div>
+        <p class="mt-3 text-center text-xs text-ink-soft/50" data-checkout-msg></p>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  const fmt = (n: number) => new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(n);
+  let items: any[] = [];
+
+  async function load() {
+    const cart = JSON.parse(localStorage.getItem('cg_cart') || '{}');
+    const ids = Object.keys(cart).filter((k) => cart[k] > 0).map(Number);
+    const container = document.querySelector('[data-cart-items]')!;
+    if (!ids.length) { container.innerHTML = '<p class="text-ink-soft/50">Tu carrito está vacío.</p>'; render([]); return; }
+    const res = await fetch('/api/productos?ids=' + ids.join(','));
+    const prods = await res.json();
+    items = prods.map((p: any) => ({ ...p, qty: Number(cart[p.id]) }));
+    render(items);
+  }
+
+  function render(list: any[]) {
+    const container = document.querySelector('[data-cart-items]')!;
+    if (!list.length) { container.innerHTML = '<p class="text-ink-soft/50">Tu carrito está vacío.</p>'; }
+    else {
+      container.innerHTML = list.map((p) => `
+        <div class="flex items-center gap-4 rounded-2xl border border-ink/10 bg-surface p-4 shadow-sm">
+          <img src="${p.imagen || ''}" class="h-20 w-20 rounded-xl object-cover bg-sand" onerror="this.style.visibility='hidden'"/>
+          <div class="flex-1">
+            <a href="/producto/${p.slug}" class="font-medium text-ink hover:text-gold-dark">${p.nombre}</a>
+            <p class="text-sm text-gold">${fmt(p.precio_actual)}</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button data-dec="${p.id}" class="h-8 w-8 rounded-full border border-ink/15 text-ink-soft hover:border-gold">−</button>
+            <span class="w-6 text-center text-ink">${p.qty}</span>
+            <button data-inc="${p.id}" class="h-8 w-8 rounded-full border border-ink/15 text-ink-soft hover:border-gold">+</button>
+          </div>
+          <button data-del="${p.id}" class="text-ink-soft/50 hover:text-bronce" title="Eliminar">✕</button>
+        </div>`).join('');
+    }
+    const total = list.reduce((s, p) => s + p.precio_actual * p.qty, 0);
+    (document.querySelector('[data-cart-subtotal]') as HTMLElement).textContent = fmt(total);
+    (document.querySelector('[data-cart-total]') as HTMLElement).textContent = fmt(total);
+    const checkout = document.querySelector('[data-checkout]') as HTMLAnchorElement;
+    if (checkout) checkout.classList.toggle('disabled:opacity-40', list.length === 0);
+  }
+
+  function persist() {
+    const cart: Record<string, number> = {};
+    items.forEach((p) => { if (p.qty > 0) cart[p.id] = p.qty; });
+    localStorage.setItem('cg_cart', JSON.stringify(cart));
+    window.dispatchEvent(new CustomEvent('cg:cart'));
+  }
+
+  document.addEventListener('click', async (e) => {
+    const t = e.target as HTMLElement;
+    const inc = t.closest('[data-inc]'); const dec = t.closest('[data-dec]');
+    const del = t.closest('[data-del]');
+    if (inc || dec) {
+      const id = Number((inc || dec)!.dataset.inc ?? (inc || dec)!.dataset.dec);
+      const it = items.find((x) => x.id === id);
+      if (inc && it.qty < it.stock) it.qty++;
+      if (dec) it.qty--;
+      persist(); render(items);
+    }
+    if (del) {
+      const id = Number(del.dataset.del!);
+      const it = items.find((x) => x.id === id); if (it) it.qty = 0;
+      persist(); render(items);
+    }
+  });
+
+  const checkout = document.querySelector('[data-checkout]');
+  checkout?.addEventListener('click', (e) => {
+    if (items.length === 0) {
+      e.preventDefault();
+      const msg = document.querySelector('[data-checkout-msg]')!;
+      msg.textContent = 'Tu carrito está vacío. Añade productos antes de continuar.';
+    }
+  });
+
+  load();
+</script>

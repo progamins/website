@@ -1,0 +1,106 @@
+---
+import '../../styles/global.css';
+import { countNotificacionesNoLeidas, type Usuario } from '../../lib/db';
+interface Props { title?: string; }
+const { title = 'Panel de Administración' } = Astro.props;
+const user = Astro.locals.user as Usuario;
+const noLeidas = countNotificacionesNoLeidas();
+const path = Astro.url.pathname;
+const items = [
+  { href: '/admin', label: 'Dashboard', icon: 'M3 12l9-9 9 9M5 10v10h14V10' },
+  { href: '/admin/productos', label: 'Productos', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
+  { href: '/admin/categorias', label: 'Categorías', icon: 'M4 6h16M4 12h16M4 18h10' },
+  { href: '/admin/colecciones', label: 'Colecciones', icon: 'M4 6h16M4 12h16M4 18h10' },
+  { href: '/admin/ofertas', label: 'Ofertas Flash', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
+  { href: '/admin/pedidos', label: 'Pedidos', icon: 'M3 3h18l-1 17-8 2-8-2L3 3zm4 4h10M7 11h10' },
+  { href: '/admin/pagos', label: 'Pagos', icon: 'M3 10h18M3 14h18M6 6h12M6 18h12' },
+  { href: '/admin/moderacion', label: 'Moderación', icon: 'M9 12l2 2 4-4M12 3l1.5 1.5L15 3l.9 1.9L18 4l-.3 2.1L21 7l-1.9 2.1L21 11l-2 2.4M4 21v-7' },
+  { href: '/admin/usuarios', label: 'Usuarios', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
+  { href: '/admin/mensajes', label: 'Mensajes', icon: 'M21 12a8 8 0 01-8 8H4l2-2a8 8 0 1115-6z' },
+  { href: '/admin/configuracion', label: 'Configuración', icon: 'M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.2a1.7 1.7 0 00-1-1.5 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.2a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3h.1a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.2a1.7 1.7 0 001 1.5h.1a1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9v.1a1.7 1.7 0 001.5 1h.2a2 2 0 110 4h-.2a1.7 1.7 0 00-1.5 1z' },
+];
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <title>{title}</title>
+  </head>
+  <body class="bg-ink text-gray-200 antialiased">
+    <div class="flex min-h-screen">
+      <aside class="hidden w-64 shrink-0 flex-col border-r border-white/10 bg-ink-2 lg:flex">
+        <a href="/" class="flex items-center gap-2 border-b border-white/10 p-5">
+          <span class="flex h-8 w-8 items-center justify-center rounded-full bg-gold font-display font-bold text-ink">C</span>
+          <div>
+            <span class="block font-display text-white">Chollo <span class="text-gold">&amp;</span> Glam</span>
+            <span class="text-[10px] uppercase tracking-widest text-gold">Admin</span>
+          </div>
+        </a>
+        <nav class="flex-1 space-y-1 p-3">
+          {items.map((it) => (
+            <a href={it.href} class:list={["flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition", path === it.href ? "bg-gold text-ink" : "text-gray-300 hover:bg-white/5 hover:text-gold"]}>
+              <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><path stroke-linecap="round" stroke-linejoin="round" d={it.icon}/></svg>
+              {it.label}
+              {it.href === '/admin/moderacion' && <span data-notif-badge class="ml-auto rounded-full bg-red-500 px-2 text-[10px] font-bold text-white">{noLeidas}</span>}
+            </a>
+          ))}
+        </nav>
+        <div class="border-t border-white/10 p-4">
+          <div class="flex items-center gap-3">
+            <div class="flex h-9 w-9 items-center justify-center rounded-full bg-gold/20 text-gold">{user.nombre.charAt(0)}</div>
+            <div class="min-w-0">
+              <p class="truncate text-sm font-medium text-white">{user.nombre}</p>
+              <p class="text-xs capitalize text-gray-400">{user.rol}</p>
+            </div>
+          </div>
+          <div class="mt-3 flex gap-2">
+            <a href="/" class="flex-1 rounded-full border border-white/15 py-1.5 text-center text-xs text-gray-300 hover:border-gold hover:text-gold">Ver tienda</a>
+            <form action="/api/auth/admin-logout" method="post"><button class="flex-1 rounded-full border border-white/15 py-1.5 text-xs text-gray-300 hover:border-red-400 hover:text-red-400">Salir</button></form>
+          </div>
+        </div>
+      </aside>
+
+      <div class="flex min-w-0 flex-1 flex-col">
+        <header class="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-white/10 bg-ink/90 px-4 backdrop-blur sm:px-6">
+          <div class="lg:hidden font-display text-white">Chollo &amp; Glam</div>
+          <h1 class="hidden font-display text-lg text-white lg:block">{title}</h1>
+          <div class="flex items-center gap-4">
+            <a href="/admin/notificaciones" class="relative text-gray-300 hover:text-gold">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+              <span class="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-gold px-1 text-[10px] font-bold text-ink">{noLeidas}</span>
+            </a>
+          </div>
+        </header>
+        <main class="flex-1 p-4 sm:p-6">
+          <slot />
+        </main>
+      </div>
+    </div>
+
+    <!-- Navegación móvil inferior -->
+    <nav class="fixed bottom-0 left-0 right-0 z-40 flex justify-around border-t border-white/10 bg-ink-2 p-2 lg:hidden">
+      {items.slice(0, 6).map((it) => (
+        <a href={it.href} class:list={["rounded-lg p-2", path === it.href ? "text-gold" : "text-gray-400"]}>
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><path stroke-linecap="round" stroke-linejoin="round" d={it.icon}/></svg>
+        </a>
+      ))}
+    </nav>
+  </body>
+</html>
+
+<script>
+  window.addEventListener('cg:notif', () => {
+    document.querySelectorAll('[data-notif-badge]').forEach((b) => {
+      fetch('/api/notificaciones/count').then((r) => r.json()).then((d) => {
+        b.textContent = String(d.n);
+        b.classList.toggle('hidden', d.n === 0);
+      });
+    });
+  });
+</script>

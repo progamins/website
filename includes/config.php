@@ -3,7 +3,7 @@
 // Configuración general del sitio
 
 // URL base del sitio
-define('BASE_URL', 'http://localhost/chollo_glam');
+define('BASE_URL', 'http://localhost:8080');
 
 // Rutas del sistema
 define('ROOT_PATH', dirname(__DIR__));

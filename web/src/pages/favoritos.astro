@@ -1,0 +1,19 @@
+---
+import Layout from '../components/Layout.astro';
+import ProductCard from '../components/ProductCard.astro';
+import { db, type Usuario } from '../lib/db';
+const user = Astro.locals.user as Usuario;
+const deseos = db.prepare(`SELECT p.* FROM lista_deseos l JOIN productos p ON p.id = l.producto_id WHERE l.usuario_id = ? ORDER BY l.id DESC`).all(user.id) as any[];
+---
+<Layout title="Favoritos · Chollo & Glam">
+  <section class="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+    <h1 class="mb-8 font-display text-3xl text-ink">Mis favoritos</h1>
+    {deseos.length === 0 ? (
+      <p class="text-ink-soft/50">No tienes favoritos todavía.</p>
+    ) : (
+      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {deseos.map((p) => <ProductCard producto={p} />)}
+      </div>
+    )}
+  </section>
+</Layout>

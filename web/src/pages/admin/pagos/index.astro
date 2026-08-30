@@ -1,0 +1,101 @@
+---
+import AdminLayout from '../../../components/admin/AdminLayout.astro';
+import { getPagos, getEstadisticasPago, formatEUR } from '../../../lib/pagos';
+const { estado = 'todos', gateway = 'todos' } = Astro.url.searchParams;
+const pagos = getPagos({ estado, gateway });
+const stats = getEstadisticasPago();
+const estadoColor: Record<string, string> = { aprobado: 'bg-green-500/15 text-green-400', pendiente: 'bg-yellow-500/15 text-yellow-400', fallido: 'bg-red-500/15 text-red-400', reembolsado: 'bg-blue-500/15 text-blue-400' };
+const estadoLabel: Record<string, string> = { aprobado: 'Aprobado', pendiente: 'Pendiente', fallido: 'Fallido', reembolsado: 'Reembolsado' };
+const gatewayLabel: Record<string, string> = { tarjeta: 'Tarjeta', paypal: 'PayPal', transferencia: 'Transferencia', manual: 'Manual' };
+const mk = (e: string, g: string) => `/admin/pagos?estado=${e}&gateway=${g}`;
+const cards = [
+  { label: 'Cobrado', value: stats.aprobado, color: 'text-green-400', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z' },
+  { label: 'Pendiente', value: stats.pendiente, color: 'text-yellow-400', icon: 'M12 6v6l4 2M12 3a9 9 0 100 18 9 9 0 000-18z' },
+  { label: 'Fallido', value: stats.fallido, color: 'text-red-400', icon: 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M12 3a9 9 0 100 18 9 9 0 000-18z' },
+  { label: 'Reembolsado', value: stats.reembolsado, color: 'text-blue-400', icon: 'M9 12l2 2 4-4M12 3a9 9 0 100 18 9 9 0 000-18z' },
+];
+const neto = stats.neto;
+---
+<AdminLayout title="Gestión de pagos">
+  <div class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+    {cards.map((c) => (
+      <div class="rounded-2xl border border-white/10 bg-ink-2 p-5">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-gray-400">{c.label}</span>
+          <svg class={["h-5 w-5", c.color]} fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d={c.icon}/></svg>
+        </div>
+        <p class={["mt-2 font-display text-2xl", c.color]}>{formatEUR(c.value)}</p>
+      </div>
+    ))}
+    <div class="rounded-2xl border border-gold/40 bg-gradient-to-br from-ink-2 to-ink-3 p-5">
+      <span class="text-sm text-gray-400">Ingresos netos</span>
+      <p class="mt-2 font-display text-2xl text-gold">{formatEUR(neto)}</p>
+      <p class="text-xs text-gray-500">Cobrado − reembolsos</p>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <form action="/admin/pagos" method="get" class="flex flex-wrap gap-2">
+      <select name="estado" class="rounded-full border border-white/15 bg-ink px-4 py-2 text-sm text-white outline-none focus:border-gold">
+        {['todos', 'aprobado', 'pendiente', 'fallido', 'reembolsado'].map((e) => <option value={e} selected={estado === e}>{e === 'todos' ? 'Todos los estados' : estadoLabel[e]}</option>)}
+      </select>
+      <select name="gateway" class="rounded-full border border-white/15 bg-ink px-4 py-2 text-sm text-white outline-none focus:border-gold">
+        {['todos', 'tarjeta', 'paypal', 'transferencia', 'manual'].map((g) => <option value={g} selected={gateway === g}>{g === 'todos' ? 'Todos los métodos' : gatewayLabel[g]}</option>)}
+      </select>
+      <button class="rounded-full bg-gold px-5 py-2 text-sm font-semibold text-ink hover:bg-gold-light">Filtrar</button>
+    </form>
+    <a href="/admin/pagos/registrar" class="rounded-full bg-gold px-5 py-2 text-sm font-semibold text-ink hover:bg-gold-light">+ Registrar pago</a>
+  </div>
+
+  <div class="overflow-x-auto rounded-2xl border border-white/10 bg-ink-2">
+    <table class="w-full text-left text-sm">
+      <thead class="border-b border-white/10 text-xs uppercase tracking-wider text-gray-400">
+        <tr>
+          <th class="px-4 py-3">Referencia</th><th class="px-4 py-3">Pedido</th><th class="px-4 py-3">Cliente</th><th class="px-4 py-3">Método</th><th class="px-4 py-3">Tipo</th><th class="px-4 py-3">Monto</th><th class="px-4 py-3">Estado</th><th class="px-4 py-3 text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-white/5">
+        {pagos.length === 0 && (
+          <tr><td colspan="8" class="px-4 py-8 text-center text-gray-500">No hay pagos que coincidan con el filtro.</td></tr>
+        )}
+        {pagos.map((p) => (
+          <tr class="hover:bg-white/5">
+            <td class="px-4 py-3">
+              <span class="font-medium text-white">{p.referencia}</span>
+              <span class="block text-xs text-gray-500">{new Date(p.creado_en).toLocaleString('es-ES')}</span>
+            </td>
+            <td class="px-4 py-3"><a href={`/admin/pedidos#pedido-${p.pedido_id}`} class="text-gold hover:text-gold-light">{p.pedido_ref}</a></td>
+            <td class="px-4 py-3 text-gray-300">{p.cliente ?? '—'}</td>
+            <td class="px-4 py-3"><span class="rounded bg-white/5 px-2 py-0.5 text-xs text-gray-300">{gatewayLabel[p.gateway] ?? p.gateway}</span></td>
+            <td class="px-4 py-3"><span class:list={["rounded px-2 py-0.5 text-xs", p.tipo === 'reembolso' ? "bg-blue-500/15 text-blue-400" : "bg-white/5 text-gray-300"]}>{p.tipo === 'reembolso' ? 'Reembolso' : 'Pago'}</span></td>
+            <td class="px-4 py-3 font-medium text-white">{formatEUR(p.monto)}</td>
+            <td class="px-4 py-3"><span class:list={["rounded px-2 py-0.5 text-xs", estadoColor[p.estado]]}>{estadoLabel[p.estado] ?? p.estado}</span></td>
+            <td class="px-4 py-3">
+              <div class="flex justify-end gap-2 text-xs">
+                {p.tipo === 'pago' && p.estado === 'pendiente' && (
+                  <>
+                    <form action="/admin/pagos/aprobar" method="post"><input type="hidden" name="id" value={p.id} /><button class="rounded-full bg-green-600/20 px-3 py-1.5 text-green-400 hover:bg-green-600/30">Aprobar</button></form>
+                    <form action="/admin/pagos/fallar" method="post"><input type="hidden" name="id" value={p.id} /><button class="rounded-full border border-white/15 px-3 py-1.5 text-red-400 hover:border-red-400">Fallar</button></form>
+                  </>
+                )}
+                {p.tipo === 'pago' && p.estado === 'aprobado' && (
+                  <form action="/admin/pagos/reembolsar" method="post" onsubmit="return confirm('¿Reembolsar este pedido (monto total cobrado)?')">
+                    <input type="hidden" name="pedido_id" value={p.pedido_id} />
+                    <button class="rounded-full border border-white/15 px-3 py-1.5 text-blue-400 hover:border-blue-400">Reembolsar</button>
+                  </form>
+                )}
+                {p.tipo === 'pago' && p.estado === 'fallido' && (
+                  <form action="/admin/pagos/crear" method="post">
+                    <input type="hidden" name="pedido_id" value={p.pedido_id} /><input type="hidden" name="monto" value={p.monto} /><input type="hidden" name="gateway" value={p.gateway} />
+                    <button class="rounded-full border border-white/15 px-3 py-1.5 text-gray-300 hover:border-gold hover:text-gold">Reintentar</button>
+                  </form>
+                )}
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</AdminLayout>

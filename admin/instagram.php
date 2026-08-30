@@ -13,14 +13,14 @@ define('ADMIN_ACCESS', true);
 session_start();
 
 // Include database connection
-$conn = require_once 'db_config.php';
+require_once 'db_config.php';
 
 // Authentication check
 // Uncomment this section when ready to implement proper authentication
-// if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-//     header('Location: login.php');
-//     exit;
-// }
+if (!isset($_SESSION["admin_logged_in"]) || $_SESSION["admin_logged_in"] !== true) {
+    header("Location: login.php");
+    exit;
+}
 
 // Function to safely escape values for SQL queries
 function escape($conn, $value)
@@ -254,14 +254,14 @@ $instagram_posts = mysqli_fetch_all($result, MYSQLI_ASSOC);
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="suscriptores.php">
+                        <a class="nav-link" href="#">
                             <i class="fas fa-envelope me-1"></i> Suscriptores
                         </a>
                     </li>
                 </ul>
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="configuracion.php">
+                        <a class="nav-link" href="#">
                             <i class="fas fa-cog me-1"></i> Configuración
                         </a>
                     </li>

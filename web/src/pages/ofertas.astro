@@ -1,0 +1,22 @@
+---
+import Layout from '../components/Layout.astro';
+import ProductCard from '../components/ProductCard.astro';
+import { getOfertas } from '../lib/db';
+const productos = getOfertas();
+---
+<Layout title="Ofertas · Chollo & Glam">
+  <section class="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+    <div class="mb-10 text-center">
+      <p class="text-[11px] uppercase tracking-[0.25em] text-gold">Descuentos</p>
+      <h1 class="mt-2 font-display text-4xl text-ink">Ofertas</h1>
+      <p class="mx-auto mt-3 max-w-xl text-ink-soft/70">Piezas seleccionadas con precios rebajados por tiempo limitado.</p>
+    </div>
+    {productos.length === 0 ? (
+      <p class="text-center text-ink-soft/50">No hay ofertas disponibles en este momento.</p>
+    ) : (
+      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {productos.map((p) => <ProductCard producto={p} />)}
+      </div>
+    )}
+  </section>
+</Layout>

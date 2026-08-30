@@ -1,0 +1,10 @@
+---
+import AdminLayout from '../../../components/admin/AdminLayout.astro';
+import ProductForm from '../../../components/admin/ProductForm.astro';
+import { db } from '../../../lib/db';
+const categorias = db.prepare('SELECT * FROM categorias ORDER BY nombre').all() as any[];
+const colecciones = db.prepare('SELECT * FROM colecciones ORDER BY nombre').all() as any[];
+---
+<AdminLayout title="Nuevo producto">
+  <ProductForm categorias={categorias} colecciones={colecciones} />
+</AdminLayout>

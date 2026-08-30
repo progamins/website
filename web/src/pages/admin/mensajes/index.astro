@@ -1,0 +1,30 @@
+---
+import AdminLayout from '../../../components/admin/AdminLayout.astro';
+import { db } from '../../../lib/db';
+const mensajes = db.prepare('SELECT * FROM mensajes ORDER BY id DESC').all() as any[];
+---
+<AdminLayout title="Mensajes">
+  {mensajes.length === 0 ? (
+    <div class="rounded-2xl border border-white/10 bg-ink-2 p-8 text-center text-gray-400">No hay mensajes de contacto.</div>
+  ) : (
+    <div class="space-y-4">
+      {mensajes.map((m) => (
+        <div class:list={["rounded-2xl border bg-ink-2 p-5", m.leido ? "border-white/10" : "border-gold/50"]}>
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <span class="font-medium text-white">{m.nombre}</span>
+              <span class="text-sm text-gray-400">{m.email}</span>
+              {m.asunto && <span class="rounded bg-blue-500/20 px-2 py-0.5 text-xs text-blue-400">{m.asunto}</span>}
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-xs text-gray-500">{new Date(m.creado_en).toLocaleString('es-ES')}</span>
+              <form action="/admin/mensajes/leido" method="post"><input type="hidden" name="id" value={m.id} /><button class="rounded-full border border-white/15 px-3 py-1.5 text-xs text-gray-300 hover:border-gold hover:text-gold">{m.leido ? 'No leído' : 'Marcar leído'}</button></form>
+              <form action="/admin/mensajes/eliminar" method="post" onsubmit="return confirm('¿Eliminar?')"><input type="hidden" name="id" value={m.id} /><button class="rounded-full border border-white/15 px-3 py-1.5 text-xs text-gray-300 hover:border-red-400 hover:text-red-400">Eliminar</button></form>
+            </div>
+          </div>
+          <p class="mt-3 text-sm text-gray-300">{m.mensaje}</p>
+        </div>
+      ))}
+    </div>
+  )}
+</AdminLayout>

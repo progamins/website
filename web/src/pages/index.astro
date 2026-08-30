@@ -1,0 +1,152 @@
+---
+import Layout from '../components/Layout.astro';
+import ProductCard from '../components/ProductCard.astro';
+import FlashTimer from '../components/FlashTimer.astro';
+import BannerCarousel from '../components/BannerCarousel.astro';
+import { getOfertaFlashActiva, getProductosDestacados, getNovedades, getCategorias, getColecciones, getTestimonios, getInstagramFeed } from '../lib/db';
+
+const oferta = getOfertaFlashActiva();
+const destacados = getProductosDestacados(8);
+const novedades = getNovedades(4);
+const categorias = getCategorias();
+const colecciones = getColecciones();
+const testimonios = getTestimonios();
+const instagram = getInstagramFeed();
+const sectionTitle = 'text-[11px] uppercase tracking-[0.25em] text-gold';
+const sectionHeading = 'mt-2 font-display text-3xl text-ink sm:text-4xl';
+---
+
+<Layout title="Chollo & Glam · Joyería y artesanía peruana">
+
+  <!-- CARRUSEL DE BANNERS (a pantalla completa, sin textos) -->
+  <BannerCarousel />
+
+  <!-- OFERTA FLASH (sección oscura de contraste) -->
+  {oferta && (
+    <section class="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+      <div class="rounded-3xl bg-gradient-to-br from-ink-3 to-ink-2 p-8 shadow-2xl shadow-gold/5 ring-1 ring-gold/30">
+        <div class="flex flex-wrap items-center justify-between gap-6">
+          <div>
+            <p class="text-xs uppercase tracking-[0.25em] text-gold-light">Descuentos por tiempo limitado</p>
+            <h2 class="mt-1 font-display text-3xl text-white">{oferta.oferta.titulo}</h2>
+          </div>
+          <FlashTimer fin={oferta.oferta.tiempo_fin} />
+        </div>
+        <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {oferta.productos.map((p) => <ProductCard producto={p} />)}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- DESTACADOS -->
+  <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+    <div class="mb-8 flex items-end justify-between">
+      <div>
+        <p class={sectionTitle}>Favoritos de la casa</p>
+        <h2 class={sectionHeading}>Productos destacados</h2>
+      </div>
+      <a href="/novedades" class="text-sm font-medium text-gold hover:text-gold-dark">Ver todo →</a>
+    </div>
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {destacados.map((p) => <ProductCard producto={p} />)}
+    </div>
+  </section>
+
+  <!-- CATEGORÍAS -->
+  <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+    <div class="mb-8 text-center">
+      <p class={sectionTitle}>Explora por categoría</p>
+      <h2 class={sectionHeading}>Nuestras colecciones</h2>
+    </div>
+    <div class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+      {categorias.map((c) => (
+        <a href={`/categoria/${c.slug}`} class="group relative overflow-hidden rounded-2xl border border-ink/10 bg-surface shadow-sm transition hover:shadow-lg">
+          <div class="aspect-[3/4] w-full bg-sand">
+            {c.imagen && <img src={c.imagen} alt={c.nombre} loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />}
+          </div>
+          <div class="absolute inset-0 flex items-end bg-gradient-to-t from-ink/80 via-ink/10 to-transparent p-3">
+            <span class="font-display text-lg text-white">{c.nombre}</span>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <!-- NOVEDADES -->
+  <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+    <div class="mb-8 flex items-end justify-between">
+      <div>
+        <p class={sectionTitle}>Recién llegados</p>
+        <h2 class={sectionHeading}>Novedades</h2>
+      </div>
+      <a href="/novedades" class="text-sm font-medium text-gold hover:text-gold-dark">Ver todo →</a>
+    </div>
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {novedades.map((p) => <ProductCard producto={p} />)}
+    </div>
+  </section>
+
+  <!-- COLECCIONES -->
+  {colecciones.length > 0 && (
+    <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+      <div class="mb-8 text-center">
+        <p class={sectionTitle}>Ediciones limitadas</p>
+        <h2 class={sectionHeading}>Historias en oro</h2>
+      </div>
+      <div class="grid gap-6 md:grid-cols-3">
+        {colecciones.map((c) => (
+          <div class="group relative overflow-hidden rounded-3xl border border-ink/10 shadow-sm">
+            <div class="aspect-[4/5] w-full bg-sand">
+              {c.imagen && <img src={c.imagen} alt={c.nombre} loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />}
+            </div>
+            <div class="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-ink/90 via-ink/30 to-transparent p-6">
+              <h3 class="font-display text-2xl text-white">{c.nombre}</h3>
+              {c.descripcion && <p class="mt-2 line-clamp-2 text-sm text-gray-200">{c.descripcion}</p>}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <!-- TESTIMONIOS -->
+  {testimonios.length > 0 && (
+    <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+      <div class="mb-8 text-center">
+        <p class={sectionTitle}>Opiniones</p>
+        <h2 class={sectionHeading}>Lo que dicen nuestros clientes</h2>
+      </div>
+      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {testimonios.map((t) => (
+          <div class="rounded-2xl border border-ink/10 bg-surface p-6 shadow-sm">
+            <div class="text-sm text-gold">{'★'.repeat(Math.round(t.valoracion))}</div>
+            <p class="mt-3 text-sm leading-relaxed text-ink-soft">"{t.comentario}"</p>
+            <p class="mt-4 font-medium text-ink">{t.nombre_cliente}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <!-- INSTAGRAM -->
+  {instagram.length > 0 && (
+    <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+      <div class="mb-8 flex items-center justify-between">
+        <div>
+          <p class={sectionTitle}>Síguenos</p>
+          <h2 class={sectionHeading}>@cholloyglam</h2>
+        </div>
+      </div>
+      <div class="grid grid-cols-3 gap-3 md:grid-cols-6">
+        {instagram.map((i) => (
+          <a href={i.url ?? '#'} target="_blank" class="group relative overflow-hidden rounded-xl border border-ink/10 bg-surface">
+            <div class="aspect-square w-full bg-sand">
+              {i.imagen && <img src={i.imagen} alt="Instagram" loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />}
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+</Layout>

@@ -1,0 +1,33 @@
+---
+import Layout from '../../components/Layout.astro';
+export const prerender = false;
+const ref = Astro.url.searchParams.get('ref') ?? '';
+const total = Astro.url.searchParams.get('total') ?? '';
+const nTotal = total ? Number(total) : 0;
+const fmt = new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format;
+const email = Astro.locals.user?.email;
+---
+<Layout title="Pedido confirmado · Chollo & Glam">
+  <section class="mx-auto flex min-h-[70vh] max-w-2xl flex-col items-center justify-center px-4 py-16 text-center">
+    <div class="flex h-20 w-20 items-center justify-center rounded-full bg-ande/10 text-ande">
+      <svg class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+    </div>
+    <h1 class="mt-6 font-display text-4xl text-ink">¡Gracias por tu compra!</h1>
+    <p class="mt-3 text-ink-soft/70">Tu pedido ha sido registrado correctamente.</p>
+
+    <div class="mt-8 w-full max-w-md space-y-3 rounded-2xl border border-ink/10 bg-surface p-6 text-left shadow-sm">
+      <div class="flex justify-between"><span class="text-ink-soft/70">Referencia</span><span class="font-medium text-gold">{ref}</span></div>
+      <div class="flex justify-between"><span class="text-ink-soft/70">Total</span><span class="font-display text-gold">{nTotal ? fmt(nTotal) : '—'}</span></div>
+      <div class="flex justify-between"><span class="text-ink-soft/70">Estado</span><span class="text-yellow-700">Pendiente de pago</span></div>
+      {email && <div class="flex justify-between"><span class="text-ink-soft/70">Recibirás el detalle en</span><span class="text-ink">{email}</span></div>}
+      <div class="mt-2 border-t border-ink/10 pt-3 text-sm text-ink-soft/70">
+        Te enviaremos un email con el seguimiento cuando tu pedido sea enviado.
+      </div>
+    </div>
+
+    <div class="mt-8 flex flex-wrap justify-center gap-3">
+      <a href="/cuenta" class="rounded-full bg-ink px-6 py-3 font-semibold text-cream hover:bg-ink-3">Ver mis pedidos</a>
+      <a href="/novedades" class="rounded-full border border-gold/60 px-6 py-3 font-semibold text-gold-dark hover:bg-gold/10">Seguir comprando</a>
+    </div>
+  </section>
+</Layout>

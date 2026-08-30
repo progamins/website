@@ -1,0 +1,42 @@
+---
+import '../../styles/global.css';
+const error = Astro.url.searchParams.get('error');
+const next = Astro.url.searchParams.get('next') || '/admin';
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <title>Acceso administración · Chollo &amp; Glam</title>
+  </head>
+  <body class="flex min-h-screen items-center justify-center bg-ink p-4 text-gray-200 antialiased">
+    <div class="absolute inset-0 overflow-hidden">
+      <div class="absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-gold/10 blur-3xl"></div>
+      <div class="absolute -bottom-24 left-10 h-64 w-64 rounded-full bg-gold/5 blur-3xl"></div>
+    </div>
+    <div class="relative w-full max-w-md">
+      <div class="mb-8 flex flex-col items-center text-center">
+        <span class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-gold to-gold-dark font-display text-2xl font-bold text-ink shadow-lg shadow-gold/20">C</span>
+        <h1 class="mt-4 font-display text-2xl text-white">Panel de administración</h1>
+        <p class="mt-1 text-sm text-gray-400">Chollo &amp; Glam · Zona restringida</p>
+      </div>
+
+      {error && <p class="mb-4 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-400">{error}</p>}
+
+      <form action="/api/auth/admin-login" method="post" class="rounded-3xl border border-white/10 bg-ink-2/80 p-8 backdrop-blur">
+        <input type="hidden" name="next" value={next} />
+        <label class="mb-1 block text-xs uppercase tracking-wider text-gray-400">Email</label>
+        <input name="email" type="email" required autocomplete="username" class="mb-4 w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-gold" placeholder="admin@cholloyglam.com" />
+        <label class="mb-1 block text-xs uppercase tracking-wider text-gray-400">Contraseña</label>
+        <input name="password" type="password" required autocomplete="current-password" class="mb-6 w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-gold" placeholder="••••••••" />
+        <button class="w-full rounded-xl bg-gold py-3 font-semibold text-ink transition hover:bg-gold-light">Acceder al panel</button>
+        <a href="/" class="mt-4 block text-center text-xs text-gray-500 hover:text-gold">← Volver a la tienda</a>
+      </form>
+    </div>
+  </body>
+</html>

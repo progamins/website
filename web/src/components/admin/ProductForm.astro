@@ -1,0 +1,89 @@
+---
+import { formatEUR, type Producto, type Categoria, type Coleccion } from '../../lib/db';
+interface Props {
+  producto?: Producto;
+  categorias: Categoria[];
+  colecciones: Coleccion[];
+}
+const { producto, categorias, colecciones } = Astro.props;
+const sel = (list: any[], id: number | null | undefined) => list.find((x) => x.id === id) !== undefined;
+const field = (name: string, val: string | number | null | undefined) => (val ?? '').toString();
+---
+<form action="/admin/productos/guardar" method="post" enctype="multipart/form-data" class="space-y-5 rounded-2xl border border-white/10 bg-ink-2 p-6">
+  <input type="hidden" name="id" value={producto?.id ?? ''} />
+  <div class="grid gap-4 sm:grid-cols-2">
+    <div>
+      <label class="mb-1 block text-sm text-gray-400">Nombre *</label>
+      <input name="nombre" required value={field('nombre', producto?.nombre)} class="w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-white outline-none focus:border-gold" />
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="mb-1 block text-sm text-gray-400">Precio actual *</label>
+        <input name="precio_actual" type="number" step="0.01" required value={producto?.precio_actual ?? ''} class="w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-white outline-none focus:border-gold" />
+      </div>
+      <div>
+        <label class="mb-1 block text-sm text-gray-400">Precio original</label>
+        <input name="precio_original" type="number" step="0.01" value={producto?.precio_original ?? ''} class="w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-white outline-none focus:border-gold" />
+      </div>
+    </div>
+  </div>
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    <div>
+      <label class="mb-1 block text-sm text-gray-400">Categoría</label>
+      <select name="categoria_id" class="w-full rounded-xl border border-white/15 bg-ink px-3 py-2.5 text-white outline-none focus:border-gold">
+        <option value="">— Sin categoría —</option>
+        {categorias.map((c) => <option value={c.id} selected={producto?.categoria_id === c.id}>{c.nombre}</option>)}
+      </select>
+    </div>
+    <div>
+      <label class="mb-1 block text-sm text-gray-400">Colección</label>
+      <select name="coleccion_id" class="w-full rounded-xl border border-white/15 bg-ink px-3 py-2.5 text-white outline-none focus:border-gold">
+        <option value="">— Sin colección —</option>
+        {colecciones.map((c) => <option value={c.id} selected={producto?.coleccion_id === c.id}>{c.nombre}</option>)}
+      </select>
+    </div>
+  </div>
+
+  <div class="grid gap-4 sm:grid-cols-3">
+    <div>
+      <label class="mb-1 block text-sm text-gray-400">Tipo</label>
+      <input name="tipo" value={field('tipo', producto?.tipo)} placeholder="ej. Collares" class="w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-white outline-none focus:border-gold" />
+    </div>
+    <div>
+      <label class="mb-1 block text-sm text-gray-400">Etiqueta</label>
+      <input name="etiqueta" value={field('etiqueta', producto?.etiqueta)} placeholder="ej. Nuevo" class="w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-white outline-none focus:border-gold" />
+    </div>
+    <div>
+      <label class="mb-1 block text-sm text-gray-400">Stock</label>
+      <input name="stock" type="number" value={producto?.stock ?? 0} class="w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-white outline-none focus:border-gold" />
+    </div>
+  </div>
+
+  <div>
+    <label class="mb-1 block text-sm text-gray-400">Descripción</label>
+    <textarea name="descripcion" rows="3" class="w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-white outline-none focus:border-gold">{field('descripcion', producto?.descripcion)}</textarea>
+  </div>
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    <div>
+      <label class="mb-1 block text-sm text-gray-400">Imagen</label>
+      {producto?.imagen && <img src={producto.imagen} class="mb-2 h-24 w-24 rounded-xl object-cover" alt="" />}
+      <input type="hidden" name="imagen_actual" value={producto?.imagen ?? ''} />
+      <input name="imagen" type="file" accept="image/*" class="block w-full text-sm text-gray-400 file:mr-3 file:rounded-full file:border-0 file:bg-gold file:px-4 file:py-2 file:text-xs file:font-semibold file:text-ink" />
+    </div>
+    <div class="flex flex-col justify-end gap-2">
+      <label class="flex items-center gap-2 text-sm text-gray-300">
+        <input name="destacado" type="checkbox" checked={producto?.destacado === 1} class="h-4 w-4 accent-gold" /> Destacado
+      </label>
+      <label class="flex items-center gap-2 text-sm text-gray-300">
+        <input name="activo" type="checkbox" checked={producto ? producto.activo === 1 : true} class="h-4 w-4 accent-gold" /> Activo
+      </label>
+    </div>
+  </div>
+
+  <div class="flex gap-3 pt-2">
+    <button class="rounded-full bg-gold px-6 py-2.5 font-semibold text-ink hover:bg-gold-light">{producto ? 'Guardar cambios' : 'Crear producto'}</button>
+    <a href="/admin/productos" class="rounded-full border border-white/15 px-6 py-2.5 text-gray-300 hover:border-gold hover:text-gold">Cancelar</a>
+  </div>
+</form>

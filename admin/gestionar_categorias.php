@@ -12,14 +12,14 @@ define('ADMIN_ACCESS', true);
 session_start();
 
 // Include database connection
-$conn = require_once 'db_config.php';
+require_once 'db_config.php';
 
 // Authentication check
 // Uncomment this section when ready to implement proper authentication
-// if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-//     header('Location: login.php');
-//     exit;
-// }
+if (!isset($_SESSION["admin_logged_in"]) || $_SESSION["admin_logged_in"] !== true) {
+    header("Location: login.php");
+    exit;
+}
 
 // Initialize variables
 $error = '';
@@ -367,12 +367,12 @@ function subir_imagen($input_name, $subfolder = '')
                 </div>
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a class="nav-link" href="admin_dashboard.php">
+                        <a class="nav-link" href="panel.php">
                             <i class="bi bi-speedometer2 me-2"></i> Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="admin_productos.php">
+                        <a class="nav-link" href="panel.php">
                             <i class="bi bi-box-seam me-2"></i> Productos
                         </a>
                     </li>
@@ -382,22 +382,22 @@ function subir_imagen($input_name, $subfolder = '')
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="admin_colecciones.php">
+                        <a class="nav-link" href="coleccion.php">
                             <i class="bi bi-collection me-2"></i> Colecciones
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="admin_pedidos.php">
+                        <a class="nav-link" href="#">
                             <i class="bi bi-cart me-2"></i> Pedidos
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="admin_usuarios.php">
+                        <a class="nav-link" href="#">
                             <i class="bi bi-people me-2"></i> Usuarios
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="admin_configuracion.php">
+                        <a class="nav-link" href="#">
                             <i class="bi bi-gear me-2"></i> Configuración
                         </a>
                     </li>

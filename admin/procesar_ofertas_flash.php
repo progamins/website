@@ -47,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         mysqli_commit($conn);
 
         echo "Oferta flash creada correctamente.";
-        echo "<br><a href='admin.php'>Volver al panel</a>";
+        echo "<br><a href='panel.php'>Volver al panel</a>";
 
     } catch (Exception $e) {
         // Revertir transacción en caso de error

@@ -9,7 +9,7 @@
 define('ADMIN_ACCESS', true);
 
 // Incluir conexión a la base de datos
-$conn = require_once 'db_config.php';
+require_once 'db_config.php';
 
 // Verificar si se proporcionó un ID válido
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {

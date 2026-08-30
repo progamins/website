@@ -1,0 +1,226 @@
+/* Footer Styles - Chollo & Glam */
+.site-footer {
+    background: linear-gradient(135deg, #2c1810 0%, #4a2c17 50%, #2c1810 100%);
+    color: #f5f0e8;
+    padding: 60px 0 20px;
+    margin-top: 80px;
+    position: relative;
+    overflow: hidden;
+}
+
+.site-footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #b8956a, #d4a853, #b8956a);
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 40px;
+}
+
+.footer-section h3 {
+    color: #d4a853;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid rgba(212, 168, 83, 0.3);
+}
+
+.footer-section p {
+    color: #c4b8a8;
+    line-height: 1.8;
+    margin-bottom: 15px;
+}
+
+.footer-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-section ul li {
+    margin-bottom: 12px;
+}
+
+.footer-section ul li a {
+    color: #c4b8a8;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.footer-section ul li a:hover {
+    color: #d4a853;
+    transform: translateX(5px);
+}
+
+.footer-section ul li a i {
+    font-size: 0.8rem;
+    color: #b8956a;
+}
+
+.social-links {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.social-links a {
+    width: 45px;
+    height: 45px;
+    background: rgba(184, 149, 106, 0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #d4a853;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(212, 168, 83, 0.3);
+}
+
+.social-links a:hover {
+    background: #d4a853;
+    color: #2c1810;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(212, 168, 83, 0.3);
+}
+
+.newsletter-form-footer {
+    display: flex;
+    margin-top: 20px;
+    gap: 10px;
+}
+
+.newsletter-form-footer input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid rgba(212, 168, 83, 0.3);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 25px;
+    color: #f5f0e8;
+    font-size: 0.9rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.newsletter-form-footer input::placeholder {
+    color: #8a7d6b;
+}
+
+.newsletter-form-footer input:focus {
+    border-color: #d4a853;
+    box-shadow: 0 0 10px rgba(212, 168, 83, 0.2);
+}
+
+.newsletter-form-footer button {
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #b8956a, #d4a853);
+    color: #2c1810;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.newsletter-form-footer button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(212, 168, 83, 0.4);
+}
+
+.footer-bottom {
+    max-width: 1200px;
+    margin: 40px auto 0;
+    padding: 20px 20px 0;
+    border-top: 1px solid rgba(212, 168, 83, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.footer-bottom p {
+    color: #8a7d6b;
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.footer-bottom .payment-icons {
+    display: flex;
+    gap: 15px;
+}
+
+.footer-bottom .payment-icons i {
+    font-size: 1.5rem;
+    color: #8a7d6b;
+    transition: color 0.3s ease;
+}
+
+.footer-bottom .payment-icons i:hover {
+    color: #d4a853;
+}
+
+.back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #b8956a, #d4a853);
+    color: #2c1810;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+.back-to-top.hidden {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+}
+
+.back-to-top.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.back-to-top:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(212, 168, 83, 0.5);
+}
+
+@media (max-width: 768px) {
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    .footer-bottom {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .newsletter-form-footer {
+        flex-direction: column;
+    }
+}

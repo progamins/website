@@ -71,7 +71,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if (mysqli_query($conn, $sql)) {
         echo "Producto guardado correctamente.";
-        echo "<br><a href='admin.php'>Volver al panel</a>";
+        echo "<br><a href='panel.php'>Volver al panel</a>";
     } else {
         echo "Error: " . $sql . "<br>" . mysqli_error($conn);
     }

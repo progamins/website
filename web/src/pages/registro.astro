@@ -1,0 +1,24 @@
+---
+import Layout from '../components/Layout.astro';
+const next = Astro.url.searchParams.get('next') || '/';
+const user = Astro.locals.user;
+if (user) return Astro.redirect('/cuenta');
+---
+<Layout title="Registro · Chollo & Glam">
+  <section class="mx-auto flex min-h-[60vh] max-w-md flex-col justify-center px-4 py-16 sm:px-6">
+    <div class="text-center">
+      <p class="text-[11px] uppercase tracking-[0.25em] text-gold">Únete a nosotros</p>
+      <h1 class="mt-2 font-display text-4xl text-ink">Crear cuenta</h1>
+      <p class="mt-2 text-sm text-ink-soft/70">Únete a Chollo &amp; Glam</p>
+    </div>
+    <form action="/api/auth/registro" method="post" class="mt-8 space-y-4">
+      <input type="hidden" name="next" value={next} />
+      <input name="nombre" required placeholder="Nombre" class="w-full rounded-xl border border-ink/15 bg-surface px-4 py-3 text-ink placeholder-ink-soft/50 outline-none focus:border-gold" />
+      <input name="apellidos" placeholder="Apellidos" class="w-full rounded-xl border border-ink/15 bg-surface px-4 py-3 text-ink placeholder-ink-soft/50 outline-none focus:border-gold" />
+      <input name="email" type="email" required placeholder="Email" class="w-full rounded-xl border border-ink/15 bg-surface px-4 py-3 text-ink placeholder-ink-soft/50 outline-none focus:border-gold" />
+      <input name="password" type="password" required placeholder="Contraseña (mín. 8 caracteres)" class="w-full rounded-xl border border-ink/15 bg-surface px-4 py-3 text-ink placeholder-ink-soft/50 outline-none focus:border-gold" />
+      <button class="w-full rounded-full bg-ink px-6 py-3 font-semibold text-cream transition hover:bg-ink-3">Registrarme</button>
+    </form>
+    <p class="mt-6 text-center text-sm text-ink-soft/70">¿Ya tienes cuenta? <a href="/login" class="font-medium text-gold hover:text-gold-dark">Inicia sesión</a></p>
+  </section>
+</Layout>

@@ -1,0 +1,141 @@
+---
+import { getLogo } from '../lib/db';
+const year = new Date().getFullYear();
+const logo = getLogo();
+const enlaces = [
+  { label: 'Collares', href: '/categoria/collares' },
+  { label: 'Aretes', href: '/categoria/aretes' },
+  { label: 'Pulseras', href: '/categoria/pulseras' },
+  { label: 'Anillos', href: '/categoria/anillos' },
+  { label: 'Premium', href: '/categoria/premium' },
+  { label: 'Ofertas', href: '/ofertas' },
+];
+const ayuda = [
+  { label: 'Cómo comprar', href: '/contacto' },
+  { label: 'Envíos y entregas', href: '/contacto' },
+  { label: 'Cambios y devoluciones', href: '/contacto' },
+  { label: 'Preguntas frecuentes', href: '/contacto' },
+  { label: 'Contacto', href: '/contacto' },
+];
+---
+<footer class="relative mt-16">
+  <div class="h-1 w-full bg-gradient-to-r from-gold-dark via-gold to-gold-dark"></div>
+  <div class="bg-ink-2 text-gray-200">
+    <!-- CTA newsletter -->
+    <div class="relative overflow-hidden border-b border-white/10">
+      <div class="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-gold/10 blur-3xl"></div>
+      <div class="relative mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-4 py-12 sm:px-6 lg:flex-row">
+        <div class="text-center lg:text-left">
+          <p class="text-xs uppercase tracking-[0.2em] text-gold-light">Ofertas exclusivas</p>
+          <h3 class="mt-1 font-display text-3xl text-white">Únete a nuestro círculo</h3>
+          <p class="mt-1 text-sm text-gray-400">Novedades, descuentos y lanzamientos antes que nadie.</p>
+        </div>
+        <form class="flex w-full max-w-md gap-2" data-newsletter>
+          <input name="email" type="email" required placeholder="tu@email.com" class="w-full rounded-full border border-white/15 bg-white/5 px-5 py-3 text-sm text-white placeholder-gray-500 outline-none focus:border-gold-light" />
+          <button class="shrink-0 rounded-full bg-gold px-6 py-3 text-sm font-semibold text-white transition hover:bg-gold-light">Suscribirme</button>
+        </form>
+      </div>
+      <p class="relative mx-auto hidden max-w-7xl px-6 pb-2 text-sm text-green-400" data-newsletter-msg></p>
+    </div>
+
+    <!-- Columnas -->
+    <div class="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 lg:grid-cols-4">
+      <div>
+        <div class="flex items-center gap-2.5">
+          {logo ? (
+            <img src={logo} alt="Chollo & Glam" class="h-10 w-auto max-w-[10rem] object-contain" />
+          ) : (
+            <span class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-gold-light to-gold-dark font-display text-xl font-bold text-white shadow-lg shadow-gold/20">C</span>
+          )}
+          {!logo && <span class="font-display text-2xl text-white">Chollo <span class="text-gold-light">&amp;</span> Glam</span>}
+        </div>
+        <p class="mt-4 text-sm leading-relaxed text-gray-400">Joyería y artesanía peruana de diseño exclusivo. Piezas hechas a mano que cuentan historias andinas, para ti.</p>
+        <div class="mt-5 flex gap-3">
+          <a href="https://www.instagram.com/cholloyglam" target="_blank" class="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-gray-300 transition hover:border-gold hover:bg-gold/10 hover:text-gold-light" aria-label="Instagram">
+            <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.07 1.2.05 1.8.25 2.2.42.6.22 1 .48 1.4.9.4.4.7.8.9 1.4.17.4.37 1 .42 2.2.06 1.3.07 1.7.07 4.9s0 3.6-.07 4.9c-.05 1.2-.25 1.8-.42 2.2-.22.6-.48 1-.9 1.4-.4.4-.8.7-1.4.9-.4.17-1 .37-2.2.42-1.3.06-1.7.07-4.9.07s-3.6 0-4.9-.07c-1.2-.05-1.8-.25-2.2-.42a3.8 3.8 0 01-1.4-.9 3.8 3.8 0 01-.9-1.4c-.17-.4-.37-1-.42-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.07-4.9c.05-1.2.25-1.8.42-2.2.22-.6.48-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.17 1-.37 2.2-.42C8.4 2.2 8.8 2.2 12 2.2zm0 1.8c-3.1 0-3.5 0-4.8.07-1.1.05-1.7.24-2.1.4-.5.19-.9.42-1.3.8-.4.4-.6.8-.8 1.3-.16.4-.35 1-.4 2.1C2.4 8.5 2.4 8.9 2.4 12s0 3.5.07 4.8c.05 1.1.24 1.7.4 2.1.19.5.42.9.8 1.3.4.4.8.6 1.3.8.4.16 1 .35 2.1.4 1.3.06 1.7.07 4.8.07s3.5 0 4.8-.07c1.1-.05 1.7-.24 2.1-.4.5-.19.9-.42 1.3-.8.4-.4.6-.8.8-1.3.16-.4.35-1 .4-2.1.06-1.3.07-1.7.07-4.8s0-3.5-.07-4.8c-.05-1.1-.24-1.7-.4-2.1a3.5 3.5 0 00-.8-1.3 3.5 3.5 0 00-1.3-.8c-.4-.16-1-.35-2.1-.4C15.5 4 15.1 4 12 4zm0 3.1a4.9 4.9 0 110 9.8 4.9 4.9 0 010-9.8zm0 1.8a3.1 3.1 0 100 6.2 3.1 3.1 0 000-6.2zm5.1-2.9a1.1 1.1 0 110 2.2 1.1 1.1 0 010-2.2z"/></svg>
+          </a>
+          <a href="#" class="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-gray-300 transition hover:border-gold hover:bg-gold/10 hover:text-gold-light" aria-label="Facebook">
+            <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M13.5 21v-7h2.4l.4-3h-2.8V9.1c0-.9.3-1.5 1.6-1.5H16.5V5.2c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v1.9H7.9v3h2.4v7h3.2z"/></svg>
+          </a>
+          <a href="#" class="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-gray-300 transition hover:border-gold hover:bg-gold/10 hover:text-gold-light" aria-label="TikTok">
+            <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19.6 7.3a4.6 4.6 0 01-3-1.1 4.6 4.6 0 01-1.6-2.9h-3V16.4a2.7 2.7 0 11-2.7-2.7c.3 0 .5 0 .8.1v-3c-.3 0-.5-.1-.8-.1a5.7 5.7 0 105.7 5.7V9.3a7.6 7.6 0 004.6 1.6V7.3z"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div>
+        <h4 class="font-display text-xl text-white">Tienda</h4>
+        <ul class="mt-4 space-y-2.5 text-sm">
+          {enlaces.map((l) => (
+            <li><a href={l.href} class="text-gray-400 transition hover:text-gold-light">{l.label}</a></li>
+          ))}
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="font-display text-xl text-white">Ayuda</h4>
+        <ul class="mt-4 space-y-2.5 text-sm">
+          {ayuda.map((l) => (
+            <li><a href={l.href} class="text-gray-400 transition hover:text-gold-light">{l.label}</a></li>
+          ))}
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="font-display text-xl text-white">Contacto</h4>
+        <ul class="mt-4 space-y-3 text-sm text-gray-400">
+          <li class="flex items-start gap-3"><svg class="mt-0.5 h-4 w-4 shrink-0 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M17.6 20.3c1.2-1.2 2.3-3.2 2.4-4.3 0-.5-.4-.9-1-.9-.5 0-1.7.4-2.9 1-.9.4-1.8-.1-2.2-.9-.6-1.3-1.5-2.6-2.5-3.6-1-1-2.3-1.9-3.6-2.5-.8-.4-1.3-1.3-.9-2.2.6-1.2 1-2.4 1-2.9 0-.6-.4-1-.9-1-1.1.1-3.1 1.2-4.3 2.4C1.6 8.4 2.3 14 6 17.6c1.8 1.9 4 3 6.4 3.3 2 .3 4.4 0 5.2-.6z"/></svg>{'clientes@cholloyglam.com'}</li>
+          <li class="flex items-start gap-3"><svg class="mt-0.5 h-4 w-4 shrink-0 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3l2 5-2 1.5a13 13 0 006 6l1.5-2 5 2v3a2 2 0 01-2 2A16 16 0 013 5z"/></svg>{'+51 600 000 000'}</li>
+          <li class="flex items-start gap-3"><svg class="mt-0.5 h-4 w-4 shrink-0 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7-5-7-11a7 7 0 0114 0c0 6-7 11-7 11z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 12a2 2 0 100-4 2 2 0 000 4z"/></svg>{'Cusco, Perú'}</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Métodos de pago -->
+    <div class="border-t border-white/10">
+      <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-6 sm:px-6">
+        <p class="text-sm text-gray-500">Métodos de pago aceptados</p>
+        <div class="flex flex-wrap gap-2">
+          {['VISA', 'Mastercard', 'Yape', 'Plin', 'PayPal', 'Transferencia'].map((p) => (
+            <span class="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold tracking-wide text-gray-300">{p}</span>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <!-- Barra inferior -->
+    <div class="border-t border-white/10">
+      <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 py-6 text-xs text-gray-500 sm:flex-row sm:px-6">
+        <p>© {year} Chollo &amp; Glam · Hecho con ♥ en Perú. Todos los derechos reservados.</p>
+        <div class="flex gap-6">
+          <a href="/contacto" class="hover:text-gold-light">Términos</a>
+          <a href="/contacto" class="hover:text-gold-light">Privacidad</a>
+          <a href="/contacto" class="hover:text-gold-light">Cookies</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('[data-newsletter]').forEach((form) => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = (form.querySelector('[name=email]') as HTMLInputElement).value;
+      const msg = form.parentElement?.querySelector('[data-newsletter-msg]') as HTMLElement;
+      if (!msg) return;
+      try {
+        const res = await fetch('/api/suscribir', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }),
+        });
+        const data = await res.json();
+        msg.textContent = data.ok ? '¡Gracias por suscribirte!' : 'Ese email ya está suscrito o es inválido.';
+        msg.classList.remove('hidden');
+        if (data.ok) form.reset();
+      } catch {
+        msg.textContent = 'Error al suscribirte.';
+        msg.classList.remove('hidden');
+      }
+    });
+  });
+</script>

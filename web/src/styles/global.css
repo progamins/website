@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+@theme {
+  /* Paleta boutique · lujo cálido con raíces peruanas */
+  --color-cream: #faf6ef;
+  --color-surface: #ffffff;
+  --color-sand: #f2ead9;
+  --color-sand-2: #eae0cb;
+  --color-ink: #2a2018;
+  --color-ink-soft: #57493a;
+  --color-ink-2: #17120d;
+  --color-ink-3: #221a12;
+  --color-gold: #a87c31;
+  --color-gold-light: #c8a25a;
+  --color-gold-dark: #86611f;
+  --color-bronce: #b5542f;
+  --color-ande: #1f5b54;
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Jost", "Inter", system-ui, sans-serif;
+}
+
+html {
+  font-family: var(--font-sans);
+  background-color: var(--color-cream);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+::selection {
+  background: var(--color-gold);
+  color: #fffdf8;
+}
+
+/* Texto con gradiente dorado (para fondos oscuros del hero) */
+.gold-gradient-text {
+  background: linear-gradient(120deg, #e2c078, #c8a25a 55%, #a87c31);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Texto degradado elegante sobre fondo claro */
+.dark-gradient-text {
+  background: linear-gradient(120deg, #a87c31, #b5542f 60%, #1f5b54);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ===== Animaciones de carrito ===== */
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.toast-in { animation: toast-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@keyframes toast-out {
+  to { opacity: 0; transform: translateY(10px) scale(0.96); }
+}
+.toast-out { animation: toast-out 0.28s ease-in both; }
+
+@keyframes badge-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.7); }
+  100% { transform: scale(1); }
+}
+.badge-pop { animation: badge-pop 0.45s ease; }
+
+@keyframes draw-check {
+  to { stroke-dashoffset: 0; }
+}
+.check-anim path {
+  stroke-dasharray: 26;
+  stroke-dashoffset: 26;
+  animation: draw-check 0.45s 0.12s ease-out forwards;
+}

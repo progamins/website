@@ -1,0 +1,32 @@
+---
+import { formatEUR, type Producto } from '../lib/db';
+interface Props { producto: Producto; }
+const { producto } = Astro.props;
+const descuento = producto.precio_original && producto.precio_original > producto.precio_actual
+  ? Math.round((1 - producto.precio_actual / producto.precio_original) * 100) : null;
+---
+<article class="group overflow-hidden rounded-2xl border border-ink/10 bg-surface shadow-sm transition hover:-translate-y-1 hover:border-gold/60 hover:shadow-lg hover:shadow-gold/10">
+  <a href={`/producto/${producto.slug}`} class="relative block aspect-square overflow-hidden bg-sand">
+    {producto.imagen
+      ? <img src={producto.imagen} alt={producto.nombre} loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+      : <div class="flex h-full items-center justify-center text-ink-soft/50"><span>Sin imagen</span></div>}
+    <span class="absolute left-3 top-3 rounded-full bg-ink/85 px-2.5 py-0.5 text-[11px] font-semibold text-cream backdrop-blur">{producto.etiqueta ?? 'Nuevo'}</span>
+    {descuento && <span class="absolute right-3 top-3 rounded-full bg-bronce px-2.5 py-0.5 text-[11px] font-bold text-white">-{descuento}%</span>}
+    {producto.stock === 0 && (
+      <div class="absolute inset-0 flex items-center justify-center bg-ink/50 backdrop-blur-[1px]">
+        <span class="rounded-full bg-ink/90 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-cream">Agotado</span>
+      </div>
+    )}
+  </a>
+  <div class="p-4">
+    <p class="text-[11px] uppercase tracking-[0.15em] text-gold">{producto.categoria_nombre ?? 'Joyas'}</p>
+    <a href={`/producto/${producto.slug}`} class="mt-1 block truncate font-medium text-ink hover:text-gold-dark">{producto.nombre}</a>
+    <div class="mt-2 flex items-center gap-1 text-xs text-gold" title={`${producto.valoracion} estrellas`}>
+      {'★'.repeat(Math.round(producto.valoracion))}<span class="ml-1 text-ink-soft/60">({producto.num_valoraciones})</span>
+    </div>
+    <div class="mt-2 flex items-baseline gap-2">
+      <span class="font-display text-xl text-ink">{formatEUR(producto.precio_actual)}</span>
+      {producto.precio_original && <span class="text-sm text-ink-soft/50 line-through">{formatEUR(producto.precio_original)}</span>}
+    </div>
+  </div>
+</article>

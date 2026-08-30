@@ -1,0 +1,14 @@
+---
+import AdminLayout from '../../../../components/admin/AdminLayout.astro';
+import ProductForm from '../../../../components/admin/ProductForm.astro';
+import { db, type Producto } from '../../../../lib/db';
+export const prerender = false;
+const { id } = Astro.params;
+const producto = db.prepare('SELECT * FROM productos WHERE id = ?').get(Number(id)) as Producto | undefined;
+if (!producto) return Astro.redirect('/admin/productos');
+const categorias = db.prepare('SELECT * FROM categorias ORDER BY nombre').all() as any[];
+const colecciones = db.prepare('SELECT * FROM colecciones ORDER BY nombre').all() as any[];
+---
+<AdminLayout title={`Editar · ${producto.nombre}`}>
+  <ProductForm producto={producto} categorias={categorias} colecciones={colecciones} />
+</AdminLayout>

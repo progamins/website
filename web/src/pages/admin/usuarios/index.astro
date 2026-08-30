@@ -1,0 +1,45 @@
+---
+import AdminLayout from '../../../components/admin/AdminLayout.astro';
+import { db, type Usuario } from '../../../lib/db';
+const usuarios = db.prepare('SELECT * FROM usuarios ORDER BY id').all() as Usuario[];
+const roles: Record<string, string> = { admin: 'text-gold', moderador: 'text-blue-400', cliente: 'text-gray-300' };
+---
+<AdminLayout title="Usuarios y roles">
+  <div class="overflow-x-auto rounded-2xl border border-white/10 bg-ink-2">
+    <table class="w-full text-left text-sm">
+      <thead class="border-b border-white/10 text-xs uppercase tracking-wider text-gray-400">
+        <tr><th class="px-4 py-3">Usuario</th><th class="px-4 py-3">Email</th><th class="px-4 py-3">Rol</th><th class="px-4 py-3">Estado</th><th class="px-4 py-3 text-right">Acciones</th></tr>
+      </thead>
+      <tbody class="divide-y divide-white/5">
+        {usuarios.map((u) => (
+          <tr class="hover:bg-white/5">
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-3">
+                <div class="flex h-9 w-9 items-center justify-center rounded-full bg-gold/20 text-gold">{u.nombre.charAt(0)}</div>
+                <span class="font-medium text-white">{u.nombre} {u.apellidos}</span>
+              </div>
+            </td>
+            <td class="px-4 py-3 text-gray-400">{u.email}</td>
+            <td class="px-4 py-3">
+              <form action="/admin/usuarios/rol" method="post" class="flex items-center gap-2">
+                <input type="hidden" name="id" value={u.id} />
+                <select name="rol" class:list={["rounded-lg border border-white/15 bg-ink px-2 py-1.5 text-xs capitalize outline-none focus:border-gold", roles[u.rol]]} disabled={u.rol === 'admin'}>
+                  <option value="admin" selected={u.rol === 'admin'}>admin</option>
+                  <option value="moderador" selected={u.rol === 'moderador'}>moderador</option>
+                  <option value="cliente" selected={u.rol === 'cliente'}>cliente</option>
+                </select>
+                {u.rol !== 'admin' && <button class="rounded-full border border-white/15 px-2 py-1 text-xs text-gray-300 hover:border-gold hover:text-gold">Guardar</button>}
+              </form>
+            </td>
+            <td class="px-4 py-3"><span class:list={["rounded px-2 py-0.5 text-xs", u.activo ? "bg-green-500/20 text-green-400" : "bg-gray-500/20 text-gray-400"]}>{u.activo ? 'Activo' : 'Inactivo'}</span></td>
+            <td class="px-4 py-3 text-right">
+              {u.rol !== 'admin' && (
+                <form action="/admin/usuarios/toggle" method="post"><input type="hidden" name="id" value={u.id} /><button class="rounded-full border border-white/15 px-3 py-1.5 text-xs text-gray-300 hover:border-blue-400 hover:text-blue-400">{u.activo ? 'Desactivar' : 'Activar'}</button></form>
+              )}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</AdminLayout>

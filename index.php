@@ -113,6 +113,7 @@ $categorias_destacadas = obtener_registros("SELECT * FROM categorias WHERE activ
 
   <!-- Estilos CSS con versiones para caché -->
   <link rel="stylesheet" href="assets/css/normalize.css?v=1.2">
+  <link rel="stylesheet" href="assets/nav.css">
   <link rel="stylesheet" href="index.css">
   <link rel="stylesheet" href="musica.css">
   <link rel="stylesheet" href="css/footer">
@@ -156,11 +157,13 @@ $categorias_destacadas = obtener_registros("SELECT * FROM categorias WHERE activ
   <section class="hero-banner">
     <div class="container">
       <div class="hero-content">
-        <h1 class="hero-title">Lujo & Exclusividad</h1>
-        <h2 class="hero-subtitle">Hasta 50% de DESCUENTO en colecciones premium</h2>
-        <p class="hero-description">Descubra nuestra colección de edición limitada con piezas artesanales exclusivas</p>
-        <a href="colecciones.php" class="cta-button">EXPLORAR COLECCIÓN <i class="fas fa-long-arrow-alt-right"
-            aria-hidden="true"></i></a>
+        <p class="hero-subtitle">Coleccion Exclusiva 2025</p>
+        <h1 class="hero-title">Lujo & <span>Exclusividad</span></h1>
+        <p class="hero-description">Descubra nuestra coleccion de edicion limitada con piezas artesanales inspiradas en la cultura peruana. Envio gratis en pedidos superiores a 30 euros.</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+          <a href="colecciones.php" class="cta-button">EXPLORAR COLECCION <i class="fas fa-arrow-right"></i></a>
+          <a href="novedades.php" class="cta-button" style="background:transparent;border:2px solid rgba(200,162,85,0.5);box-shadow:none">VER NOVEDADES</a>
+        </div>
       </div>
     </div>
   </section>

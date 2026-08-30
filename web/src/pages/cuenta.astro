@@ -1,0 +1,132 @@
+---
+import Layout from '../components/Layout.astro';
+import { db, formatEUR, type Usuario } from '../lib/db';
+export const prerender = false;
+const user = Astro.locals.user as Usuario;
+const pedidos = db.prepare(`SELECT * FROM pedidos WHERE usuario_id = ? ORDER BY creado_en DESC`).all(user.id) as any[];
+const detalle = (pedidoId: number) => db.prepare(`SELECT pd.*, p.nombre, p.imagen FROM pedido_detalles pd LEFT JOIN productos p ON p.id = pd.producto_id WHERE pd.pedido_id = ?`).all(pedidoId) as any[];
+const numFav = (db.prepare('SELECT COUNT(*) n FROM lista_deseos WHERE usuario_id = ?').get(user.id) as { n: number }).n;
+const numActivos = pedidos.filter((p) => !['entregado', 'cancelado'].includes(p.estado)).length;
+const numEntregados = pedidos.filter((p) => p.estado === 'entregado').length;
+const fechaRegistro = user.id ? db.prepare('SELECT creado_en FROM usuarios WHERE id = ?').get(user.id) as { creado_en: string } : null;
+const inicial = (user.nombre || user.email || '?').charAt(0).toUpperCase();
+const estadoColor: Record<string, string> = { pendiente: 'bg-yellow-100 text-yellow-700', procesando: 'bg-blue-100 text-blue-700', enviado: 'bg-purple-100 text-purple-700', entregado: 'bg-green-100 text-green-700', cancelado: 'bg-red-100 text-red-700' };
+const estadoLabel: Record<string, string> = { pendiente: 'Pendiente', procesando: 'Procesando', enviado: 'Enviado', entregado: 'Entregado', cancelado: 'Cancelado' };
+const pagoLabel: Record<string, string> = { tarjeta: 'Tarjeta', paypal: 'PayPal', transferencia: 'Transferencia' };
+---
+<Layout title="Mi cuenta · Chollo & Glam">
+  <!-- Cabecera decorativa (oscura) -->
+  <section class="relative overflow-hidden bg-ink-2">
+    <div class="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gold/15 blur-3xl"></div>
+    <div class="absolute -left-16 bottom-0 h-48 w-48 rounded-full bg-gold/5 blur-2xl"></div>
+    <div class="relative mx-auto flex max-w-7xl flex-col gap-6 px-4 py-12 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+      <div class="flex items-center gap-5">
+        <div class="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-gold-light to-gold-dark font-display text-4xl font-bold text-white shadow-lg shadow-gold/20">{inicial}</div>
+        <div>
+          <p class="text-xs uppercase tracking-[0.25em] text-gold-light">Panel de usuario</p>
+          <h1 class="mt-1 font-display text-3xl text-white sm:text-4xl">{user.nombre} {user.apellidos}</h1>
+          <p class="mt-1 text-sm text-gray-400">{user.email}</p>
+          {fechaRegistro && <p class="mt-1 text-xs text-gray-500">Cliente desde {new Date(fechaRegistro.creado_en).toLocaleDateString('es-ES')}</p>}
+        </div>
+      </div>
+      <form action="/api/auth/logout" method="post">
+        <button class="rounded-full border border-white/20 bg-white/5 px-5 py-2.5 text-sm text-gray-200 backdrop-blur transition hover:border-red-400 hover:text-red-400">Cerrar sesión</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+    <!-- Tarjetas de resumen -->
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <a href="#pedidos" class="group rounded-2xl border border-ink/10 bg-surface p-5 shadow-sm transition hover:border-gold/60">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-ink-soft/70">Pedidos totales</span>
+          <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/10 text-gold"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h18l-1 17-8 2-8-2L3 3zm4 4h10M7 11h10"/></svg></span>
+        </div>
+        <p class="mt-3 font-display text-3xl text-ink">{pedidos.length}</p>
+      </a>
+      <a href="#pedidos" class="group rounded-2xl border border-ink/10 bg-surface p-5 shadow-sm transition hover:border-gold/60">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-ink-soft/70">En proceso</span>
+          <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-700"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h10m-10 6h6"/></svg></span>
+        </div>
+        <p class="mt-3 font-display text-3xl text-ink">{numActivos}</p>
+      </a>
+      <a href="#pedidos" class="group rounded-2xl border border-ink/10 bg-surface p-5 shadow-sm transition hover:border-gold/60">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-ink-soft/70">Entregados</span>
+          <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-green-100 text-green-700"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span>
+        </div>
+        <p class="mt-3 font-display text-3xl text-ink">{numEntregados}</p>
+      </a>
+      <a href="/favoritos" class="group rounded-2xl border border-ink/10 bg-surface p-5 shadow-sm transition hover:border-gold/60">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-ink-soft/70">Favoritos</span>
+          <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-pink-100 text-pink-700"><svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7-4.5-9.5-8.5C.5 9 2 5.5 5.5 5.5 7.5 5.5 9 7 12 9.5 15 7 16.5 5.5 18.5 5.5 22 5.5 23.5 9 21.5 12.5 19 16.5 12 21z"/></svg></span>
+        </div>
+        <p class="mt-3 font-display text-3xl text-ink">{numFav}</p>
+      </a>
+    </div>
+
+    <!-- Pedidos -->
+    <div id="pedidos" class="mt-12">
+      <div class="mb-6">
+        <p class="text-[11px] uppercase tracking-[0.25em] text-gold">Historial</p>
+        <h2 class="mt-1 font-display text-3xl text-ink">Mis pedidos</h2>
+      </div>
+
+      {pedidos.length === 0 ? (
+        <div class="rounded-2xl border border-dashed border-ink/20 bg-surface p-12 text-center">
+          <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-sand text-ink-soft/50"><svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h18l-1 17-8 2-8-2L3 3z"/></svg></div>
+          <p class="mt-4 text-ink-soft/70">Aún no has realizado pedidos.</p>
+          <a href="/novedades" class="mt-5 inline-block rounded-full bg-ink px-6 py-2.5 font-semibold text-cream hover:bg-ink-3">Descubrir productos</a>
+        </div>
+      ) : (
+        <div class="space-y-5">
+          {pedidos.map((ped) => (
+            <article class="overflow-hidden rounded-2xl border border-ink/10 bg-surface shadow-sm">
+              <header class="flex flex-wrap items-center justify-between gap-3 border-b border-ink/10 bg-sand/50 px-6 py-4">
+                <div class="flex items-center gap-4">
+                  <span class="font-display text-lg text-ink">{ped.referencia}</span>
+                  <span class:list={["rounded-full px-3 py-1 text-xs font-medium", estadoColor[ped.estado]]}>{estadoLabel[ped.estado] ?? ped.estado}</span>
+                </div>
+                <div class="flex items-center gap-4 text-sm text-ink-soft/70">
+                  <span>{new Date(ped.creado_en).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                  <span class="hidden sm:inline">·</span>
+                  <span class="hidden items-center gap-1 sm:flex"><span class="text-gold">{ped.metodo_pago ? pagoLabel[ped.metodo_pago] ?? ped.metodo_pago : '—'}</span></span>
+                </div>
+              </header>
+
+              <div class="grid gap-6 px-6 py-5 lg:grid-cols-3">
+                <div class="space-y-3 lg:col-span-2">
+                  {detalle(ped.id).map((d) => (
+                    <div class="flex items-center gap-3">
+                      <img src={d.imagen ?? ''} class="h-12 w-12 rounded-lg object-cover bg-sand" onerror="this.style.visibility='hidden'" alt="" />
+                      <div class="min-w-0 flex-1">
+                        <p class="truncate text-sm font-medium text-ink">{d.nombre}</p>
+                        <p class="text-xs text-ink-soft/60">{d.cantidad} × {formatEUR(d.precio_unitario)}</p>
+                      </div>
+                      <span class="text-sm text-ink-soft">{formatEUR(d.subtotal)}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div class="rounded-xl border border-ink/10 bg-sand/60 p-4 text-sm">
+                  <p class="mb-2 font-medium text-gold">Datos de envío</p>
+                  {ped.nombre_envio && <p class="text-ink">{ped.nombre_envio}</p>}
+                  {ped.direccion_envio && <p class="text-ink-soft/70">{ped.direccion_envio}</p>}
+                  {ped.ciudad_envio && <p class="text-ink-soft/70">{ped.ciudad_envio}{ped.codigo_postal ? `, ${ped.codigo_postal}` : ''}</p>}
+                  {ped.telefono_envio && <p class="mt-1 text-ink-soft/70">{ped.telefono_envio}</p>}
+                  <div class="mt-3 flex items-center justify-between border-t border-ink/10 pt-3">
+                    <span class="text-ink-soft/70">Total</span>
+                    <span class="font-display text-lg text-ink">{formatEUR(ped.total)}</span>
+                  </div>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </div>
+  </section>
+</Layout>

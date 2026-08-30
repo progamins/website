@@ -1,0 +1,78 @@
+---
+import type { Usuario } from '../lib/db';
+import { getLogo } from '../lib/db';
+const user = Astro.locals.user as Usuario | null;
+const logo = getLogo();
+const path = Astro.url.pathname;
+const links = [
+  { href: '/', label: 'Inicio' },
+  { href: '/novedades', label: 'Novedades' },
+  { href: '/ofertas', label: 'Ofertas' },
+  { href: '/contacto', label: 'Contacto' },
+];
+const isAdmin = user && user.rol !== 'cliente';
+---
+<header class="sticky top-0 z-50 border-b border-ink/10 bg-cream/90 backdrop-blur">
+  <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+    <a href="/" class="flex items-center gap-2.5">
+      {logo ? (
+        <img src={logo} alt="Chollo & Glam" class="h-10 w-auto max-w-[10rem] object-contain" />
+      ) : (
+        <span class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-gold-light to-gold-dark font-display text-lg font-bold text-white shadow-sm shadow-gold/30">C</span>
+      )}
+      {!logo && <span class="font-display text-2xl tracking-wide text-ink">Chollo <span class="text-gold">&amp;</span> Glam</span>}
+    </a>
+
+    <nav class="hidden items-center gap-7 md:flex">
+      {links.map((l) => (
+        <a href={l.href} class:list={["text-sm font-medium tracking-wide transition", path === l.href ? "text-gold" : "text-ink-soft hover:text-gold-dark"]}>{l.label}</a>
+      ))}
+      {isAdmin && <a href="/admin" class="text-sm font-medium text-gold transition hover:text-gold-dark">Panel</a>}
+    </nav>
+
+    <div class="flex items-center gap-3">
+      <form action="/buscar" method="get" class="hidden items-center gap-2 rounded-full border border-ink/15 bg-surface px-3.5 py-1.5 lg:flex">
+        <svg class="h-4 w-4 text-ink-soft/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input name="q" placeholder="Buscar joyas…" class="w-36 bg-transparent text-sm text-ink placeholder-ink-soft/50 outline-none" />
+      </form>
+
+      <a href="/carrito" class="relative text-ink-soft transition hover:text-gold" aria-label="Carrito">
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 5h13"/></svg>
+        <span class="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-gold text-[10px] font-bold text-white" data-cart-count>0</span>
+      </a>
+
+      {user ? (
+        <a href="/cuenta" class="flex items-center gap-2 text-ink-soft transition hover:text-gold">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+          <span class="hidden text-sm sm:inline">{user.nombre.split(' ')[0]}</span>
+        </a>
+      ) : (
+        <a href="/login" class="hidden rounded-full bg-ink px-4 py-1.5 text-sm font-semibold text-cream transition hover:bg-ink-3 sm:inline-block">Entrar</a>
+      )}
+    </div>
+  </div>
+
+  <nav class="flex items-center justify-center gap-6 border-t border-ink/5 px-4 py-2 md:hidden">
+    {links.map((l) => (
+      <a href={l.href} class:list={["text-xs font-medium", path === l.href ? "text-gold" : "text-ink-soft"]}>{l.label}</a>
+    ))}
+  </nav>
+</header>
+
+<script>
+  const sync = () => {
+    const el = document.querySelector('[data-cart-count]');
+    if (!el) return;
+    try {
+      const c = JSON.parse(localStorage.getItem('cg_cart') || '{}');
+      const n = Object.values(c).reduce((a: number, b: any) => a + (Number(b) || 0), 0);
+      el.textContent = String(n);
+      el.classList.toggle('hidden', n === 0);
+      el.classList.remove('badge-pop');
+      void el.offsetWidth;
+      el.classList.add('badge-pop');
+    } catch { el.classList.add('hidden'); }
+  };
+  sync();
+  window.addEventListener('cg:cart', sync);
+</script>

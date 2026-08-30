@@ -12,7 +12,7 @@ define('ADMIN_ACCESS', true);
 session_start();
 
 // Include database connection
-$conn = require_once 'db_config.php';
+require_once 'db_config.php';
 
 // Authentication check
 // Uncomment this section when ready to implement proper authentication

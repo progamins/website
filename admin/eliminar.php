@@ -1,44 +1,24 @@
 <?php
-// Conexión a la base de datos
-$conn = mysqli_connect("localhost", "usuario", "contraseña", "chollo_glam");
+session_start();
+require_once 'db_config.php';
 
-// Verificar conexión
-if (!$conn) {
-    die("Conexión fallida: " . mysqli_connect_error());
+if (!isset($_SESSION["admin_logged_in"]) || $_SESSION["admin_logged_in"] !== true) {
+    header("Location: login.php");
+    exit;
 }
 
-// Verificar si se ha enviado el ID del producto
-if (isset($_GET['id']) && is_numeric($_GET['id'])) {
-    $id = intval($_GET['id']);
-
-    // Obtener información del producto para eliminar la imagen
-    $query = "SELECT imagen FROM productos WHERE id = $id";
-    $result = mysqli_query($conn, $query);
-
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["id"]) && is_numeric($_POST["id"])) {
+    $id = intval($_POST["id"]);
+    $result = mysqli_query($conn, "SELECT imagen FROM productos WHERE id = " . $id);
     if ($row = mysqli_fetch_assoc($result)) {
-        $imagen = $row['imagen'];
-
-        // Eliminar la imagen del servidor si existe
-        if ($imagen && file_exists("uploads/productos/" . $imagen)) {
-            unlink("uploads/productos/" . $imagen);
+        $imagen = $row["imagen"];
+        if ($imagen && file_exists("../uploads/productos/" . $imagen)) {
+            unlink("../uploads/productos/" . $imagen);
         }
-
-        // Eliminar el producto de la base de datos
-        $sql = "DELETE FROM productos WHERE id = $id";
-
-        if (mysqli_query($conn, $sql)) {
-            echo "Producto eliminado correctamente.";
-        } else {
-            echo "Error al eliminar producto: " . mysqli_error($conn);
-        }
-    } else {
-        echo "Producto no encontrado.";
+        mysqli_query($conn, "DELETE FROM productos WHERE id = " . $id);
     }
-} else {
-    echo "ID de producto no válido.";
 }
 
-echo "<br><a href='admin.php'>Volver al panel</a>";
-
-mysqli_close($conn);
+header("Location: panel.php");
+exit;
 ?>

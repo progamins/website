@@ -12,14 +12,14 @@ define('ADMIN_ACCESS', true);
 session_start();
 
 // Include database connection
-$conn = require_once 'db_config.php';
+require_once 'db_config.php';
 
 // Authentication check
 // Uncomment this section when ready to implement proper authentication
-// if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-//     header('Location: login.php');
-//     exit;
-// }
+if (!isset($_SESSION["admin_logged_in"]) || $_SESSION["admin_logged_in"] !== true) {
+    header("Location: login.php");
+    exit;
+}
 
 // Function to safely escape values for SQL queries
 function escape($conn, $value)

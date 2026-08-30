@@ -12,18 +12,18 @@ define('ADMIN_ACCESS', true);
 session_start();
 
 // Include database connection
-$conn = require_once 'db_config.php';
+require_once 'db_config.php';
 
 // Authentication check
 // Uncomment this section when ready to implement proper authentication
-// if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-//     header('Location: login.php');
-//     exit;
-// }
+if (!isset($_SESSION["admin_logged_in"]) || $_SESSION["admin_logged_in"] !== true) {
+    header("Location: login.php");
+    exit;
+}
 
 // Check if we have a product ID
 if (!isset($_GET['id']) || empty($_GET['id'])) {
-    header('Location: admin.php');
+    header('Location: panel.php');
     exit;
 }
 
@@ -35,7 +35,7 @@ $result = mysqli_query($conn, $sql);
 
 if (!$result || mysqli_num_rows($result) === 0) {
     // Product not found, redirect to admin page
-    header('Location: admin.php');
+    header('Location: panel.php');
     exit;
 }
 
@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $keep_existing_image = isset($_POST['keep_existing_image']) ? (bool) $_POST['keep_existing_image'] : false;
 
     if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === 0) {
-        $upload_dir = '../uploads/products/';
+        $upload_dir = '../uploads/productos/';
 
         // Make sure directory exists
         if (!file_exists($upload_dir)) {
@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $target = $upload_dir . $filename;
 
         if (move_uploaded_file($_FILES['imagen']['tmp_name'], $target)) {
-            $imagen = 'uploads/products/' . $filename;
+            $imagen = 'uploads/productos/' . $filename;
         }
     }
 
@@ -165,7 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" href="admin.php">
+            <a class="navbar-brand" href="panel.php">
                 <i class="fas fa-shopping-bag me-2"></i>Chollo Glam Admin
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -174,7 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link active" href="admin.php">
+                        <a class="nav-link active" href="panel.php">
                             <i class="fas fa-box me-1"></i> Productos
                         </a>
                     </li>
@@ -316,7 +316,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
 
                     <div class="d-flex justify-content-end">
-                        <a href="admin.php" class="btn btn-secondary me-2">
+                        <a href="panel.php" class="btn btn-secondary me-2">
                             <i class="fas fa-times me-1"></i> Cancelar
                         </a>
                         <button type="submit" class="btn btn-primary">

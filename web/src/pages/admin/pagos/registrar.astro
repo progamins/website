@@ -1,0 +1,50 @@
+---
+import AdminLayout from '../../../components/admin/AdminLayout.astro';
+import { db, formatEUR } from '../../../lib/db';
+const error = Astro.url.searchParams.get('error');
+// Pedidos con pago pendiente o parcial para asociar un pago
+const pedidos = db.prepare(`SELECT id, referencia, total, pago_estado, estado FROM pedidos WHERE pago_estado IN ('pendiente','parcial','fallido') ORDER BY id DESC`).all() as any[];
+const gateways = ['tarjeta', 'paypal', 'transferencia', 'manual'];
+const estadoLabel: Record<string, string> = { pendiente: 'Pendiente', parcial: 'Parcial', fallido: 'Fallido' };
+const estadoColor: Record<string, string> = { pendiente: 'text-yellow-400', parcial: 'text-blue-400', fallido: 'text-red-400' };
+---
+<AdminLayout title="Registrar pago">
+  <div class="mx-auto max-w-2xl">
+    <a href="/admin/pagos" class="text-xs text-gray-400 hover:text-gold">← Volver a pagos</a>
+    {error && <p class="mt-4 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-400">{error}</p>}
+    <form action="/admin/pagos/crear" method="post" class="mt-6 space-y-5 rounded-2xl border border-white/10 bg-ink-2 p-6">
+      <h2 class="font-display text-lg text-white">Nuevo pago</h2>
+
+      <div>
+        <label class="mb-1 block text-sm text-gray-400">Pedido *</label>
+        <select name="pedido_id" required class="w-full rounded-xl border border-white/15 bg-ink px-3 py-2.5 text-white outline-none focus:border-gold">
+          <option value="">— Selecciona un pedido —</option>
+          {pedidos.map((p) => (
+            <option value={p.id}>{p.referencia} · {formatEUR(p.total)} ({estadoLabel[p.pago_estado]})</option>
+          ))}
+        </select>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label class="mb-1 block text-sm text-gray-400">Método *</label>
+          <select name="gateway" class="w-full rounded-xl border border-white/15 bg-ink px-3 py-2.5 text-white outline-none focus:border-gold">
+            {gateways.map((g) => <option value={g}>{g === 'tarjeta' ? 'Tarjeta' : g === 'paypal' ? 'PayPal' : g === 'transferencia' ? 'Transferencia' : 'Manual'}</option>)}
+          </select>
+        </div>
+        <div>
+          <label class="mb-1 block text-sm text-gray-400">Monto *</label>
+          <input name="monto" type="number" step="0.01" min="0.01" required placeholder="0.00" class="w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-white outline-none focus:border-gold" />
+        </div>
+      </div>
+
+      <div>
+        <label class="mb-1 block text-sm text-gray-400">Notas</label>
+        <textarea name="notas" rows="3" placeholder="Referencia de transferencia, observaciones…" class="w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-white placeholder-gray-500 outline-none focus:border-gold"></textarea>
+      </div>
+
+      <button class="w-full rounded-full bg-gold px-6 py-3 font-semibold text-ink hover:bg-gold-light">Registrar pago</button>
+      <p class="text-xs text-gray-500">El pago se crea en estado <span class="text-yellow-400">pendiente</span>; podrás aprobarlo desde el listado.</p>
+    </form>
+  </div>
+</AdminLayout>

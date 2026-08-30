@@ -1,0 +1,41 @@
+---
+interface Props { fin: string; }
+const { fin } = Astro.props;
+const finIso = new Date(fin + 'Z').toISOString();
+---
+<div class="flex items-center gap-2" data-timer data-fin={finIso}>
+  <span class="flex min-w-[3rem] flex-col items-center rounded-lg bg-white/10 px-2 py-1.5 backdrop-blur">
+    <span class="font-display text-xl text-white" data-d>0</span><span class="text-[10px] text-gray-400">días</span>
+  </span>
+  <span class="text-gold">:</span>
+  <span class="flex min-w-[3rem] flex-col items-center rounded-lg bg-white/10 px-2 py-1.5 backdrop-blur">
+    <span class="font-display text-xl text-white" data-h>0</span><span class="text-[10px] text-gray-400">horas</span>
+  </span>
+  <span class="text-gold">:</span>
+  <span class="flex min-w-[3rem] flex-col items-center rounded-lg bg-white/10 px-2 py-1.5 backdrop-blur">
+    <span class="font-display text-xl text-white" data-m>0</span><span class="text-[10px] text-gray-400">min</span>
+  </span>
+  <span class="text-gold">:</span>
+  <span class="flex min-w-[3rem] flex-col items-center rounded-lg bg-white/10 px-2 py-1.5 backdrop-blur">
+    <span class="font-display text-xl text-white" data-s>0</span><span class="text-[10px] text-gray-400">seg</span>
+  </span>
+</div>
+
+<script>
+  const el = document.querySelector('[data-timer]');
+  if (el) {
+    const fin = new Date(el.dataset.fin!).getTime();
+    const d = el.querySelector('[data-d]')!, h = el.querySelector('[data-h]')!,
+          m = el.querySelector('[data-m]')!, s = el.querySelector('[data-s]')!;
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const tick = () => {
+      const diff = Math.max(0, fin - Date.now());
+      d.textContent = String(Math.floor(diff / 86400000));
+      h.textContent = pad(Math.floor(diff / 3600000) % 24);
+      m.textContent = pad(Math.floor(diff / 60000) % 60);
+      s.textContent = pad(Math.floor(diff / 1000) % 60);
+    };
+    tick();
+    setInterval(tick, 1000);
+  }
+</script>
