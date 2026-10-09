@@ -1,0 +1,24 @@
+# Secretos y entorno — nunca commitear
+.env
+.env.*
+!.env.example
+
+# Bases de datos
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+data/
+
+# Dependencias / builds
+node_modules/
+dist/
+.astro/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema
+.DS_Store
+Thumbs.db

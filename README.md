@@ -83,6 +83,27 @@ Detalles en [`web/README.md`](web/README.md).
 
 ---
 
+## 🔒 Seguridad (rama `security/hardening`)
+
+| Control | Estado |
+|---|---|
+| Contraseñas con bcrypt (cost 12) | ✅ |
+| Sesiones con token aleatorio de 256 bits + expiración en BD | ✅ |
+| Cookies `HttpOnly` + `SameSite=Lax` + `Secure` (en producción) | ✅ |
+| Rate limiting en login, admin-login y registro (bloqueo temporal tras 5 fallos/min) | ✅ |
+| RBAC: admin / moderador / cliente, verificado en middleware y en cada endpoint | ✅ |
+| SQL 100 % parametrizado (better-sqlite3 `prepare`) | ✅ |
+| Security headers en todas las respuestas: CSP, X-Frame-Options, nosniff, Referrer-Policy, HSTS | ✅ |
+| Subida de archivos: MIME verificado, tamaño máximo, extensión derivada del MIME (no del nombre) | ✅ |
+| Enlaces de banners validados (solo rutas internas o https:) — bloquea `javascript:` | ✅ |
+| `Cache-Control: no-store` en páginas autenticadas y API | ✅ |
+| `data/` (SQLite) y `.env` excluidos de git | ✅ |
+| Dependencias auditadas (`npm audit`: 0 vulnerabilidades) | ✅ |
+
+> ⚠️ **Pendiente para producción:** los pagos son una simulación (`pagos.ts`) — al integrar un gateway real (PayPal, Izipay, Niubiz) usa las claves SOLO en variables de entorno del servidor y valida webhooks por firma. Se recomienda añadir CAPTCHA (Turnstile) en login/registro si el sitio se expone a Internet.
+
+---
+
 ## 📄 Versión legacy (PHP)
 
 La carpeta raíz conserva el sitio original en **PHP procedural + MySQLi** (`index.php`, `admin/`, `includes/`, `setup_database.sql`). Se mantiene a modo de referencia histórica; el desarrollo activo continúa en `web/`.

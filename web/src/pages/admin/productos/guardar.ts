@@ -20,10 +20,24 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   let imagen = (form.get('imagen_actual') ?? '').toString() || null;
   const file = form.get('imagen') as File | null;
   if (file && file.size > 0) {
+    // Validación de subida: MIME real del archivo, tamaño máximo y extensión
+    // derivada del MIME (nunca del nombre original, que controla el cliente).
+    const MIME_EXT: Record<string, string> = {
+      'image/jpeg': 'jpg',
+      'image/png': 'png',
+      'image/webp': 'webp',
+    };
+    const mime = file.type.toLowerCase();
+    const MAX_BYTES = 2 * 1024 * 1024; // 2MB
+    if (!(mime in MIME_EXT)) {
+      return redirect('/admin/productos?error=' + encodeURIComponent('Formato no permitido: solo JPG, PNG o WEBP'));
+    }
+    if (file.size > MAX_BYTES) {
+      return redirect('/admin/productos?error=' + encodeURIComponent('La imagen supera el máximo de 2MB'));
+    }
     const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'productos');
     fs.mkdirSync(uploadDir, { recursive: true });
-    const safe = file.name.replace(/[^\w.\-]+/g, '_');
-    const filename = Date.now() + '_' + safe;
+    const filename = `${Date.now()}.${MIME_EXT[mime]}`;
     const buffer = Buffer.from(await file.arrayBuffer());
     fs.writeFileSync(path.join(uploadDir, filename), buffer);
     imagen = '/uploads/productos/' + filename;
