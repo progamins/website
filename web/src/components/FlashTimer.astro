@@ -22,7 +22,7 @@ const finIso = new Date(fin + 'Z').toISOString();
 </div>
 
 <script>
-  const el = document.querySelector('[data-timer]');
+  const el = document.querySelector<HTMLElement>('[data-timer]');
   if (el) {
     const fin = new Date(el.dataset.fin!).getTime();
     const d = el.querySelector('[data-d]')!, h = el.querySelector('[data-h]')!,

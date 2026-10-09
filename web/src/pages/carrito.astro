@@ -81,14 +81,14 @@ const user = Astro.locals.user;
     const inc = t.closest('[data-inc]'); const dec = t.closest('[data-dec]');
     const del = t.closest('[data-del]');
     if (inc || dec) {
-      const id = Number((inc || dec)!.dataset.inc ?? (inc || dec)!.dataset.dec);
+      const id = Number((inc as HTMLElement | null)?.dataset.inc ?? (dec as HTMLElement | null)?.dataset.dec);
       const it = items.find((x) => x.id === id);
       if (inc && it.qty < it.stock) it.qty++;
       if (dec) it.qty--;
       persist(); render(items);
     }
     if (del) {
-      const id = Number(del.dataset.del!);
+      const id = Number((del as HTMLElement).dataset.del!);
       const it = items.find((x) => x.id === id); if (it) it.qty = 0;
       persist(); render(items);
     }

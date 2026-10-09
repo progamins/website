@@ -22,7 +22,7 @@ import Layout from '../components/Layout.astro';
 </Layout>
 
 <script>
-  const form = document.querySelector('[data-contact]');
+  const form = document.querySelector<HTMLFormElement>('[data-contact]');
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const body = Object.fromEntries(new FormData(form as HTMLFormElement).entries());

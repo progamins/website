@@ -93,7 +93,7 @@ const navLinkCls = (href: string) => path === href ? 'text-gold' : 'text-ink-sof
   const menus = document.querySelectorAll('[data-catmenu]');
   const btn = document.querySelector('[data-catbtn]');
   const btnM = document.querySelector('[data-catbtn-m]');
-  let closeTimer;
+  let closeTimer: ReturnType<typeof setTimeout> | undefined;
 
   const open = () => { if (closeTimer) clearTimeout(closeTimer); panel?.classList.remove('hidden'); };
   const closeNow = () => { if (closeTimer) clearTimeout(closeTimer); panel?.classList.add('hidden'); };
@@ -127,7 +127,7 @@ const navLinkCls = (href: string) => path === href ? 'text-gold' : 'text-ink-sof
       el.textContent = String(n);
       el.classList.toggle('hidden', n === 0);
       el.classList.remove('badge-pop');
-      void el.offsetWidth;
+      void (el as HTMLElement).offsetWidth;
       el.classList.add('badge-pop');
     } catch { el.classList.add('hidden'); }
   };

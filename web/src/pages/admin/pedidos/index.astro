@@ -92,6 +92,6 @@ const gatewayLabel: Record<string, string> = { tarjeta: 'Tarjeta', paypal: 'PayP
 <script>
   if (location.hash.startsWith('#pedido-')) {
     const el = document.getElementById(location.hash.slice(1));
-    if (el && el.tagName === 'DETAILS') el.open = true;
+    if (el && el.tagName === 'DETAILS') (el as HTMLDetailsElement).open = true;
   }
 </script>

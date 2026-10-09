@@ -20,7 +20,7 @@
   const banner = document.querySelector('[data-cookie-banner]');
   const already = localStorage.getItem(KEY);
   if (banner && !already) banner.classList.remove('hidden');
-  const decide = (v) => {
+  const decide = (v: string) => {
     localStorage.setItem(KEY, v);
     banner?.classList.add('hidden');
   };

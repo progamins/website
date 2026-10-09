@@ -130,7 +130,7 @@ const jsonLd = {
 </Layout>
 
 <script>
-  const cartBtn = document.querySelector('[data-add-cart]');
+  const cartBtn = document.querySelector<HTMLElement>('[data-add-cart]');
   cartBtn?.addEventListener('click', () => {
     const id = cartBtn.dataset.addCart!;
     const c = JSON.parse(localStorage.getItem('cg_cart') || '{}');
@@ -151,7 +151,7 @@ const jsonLd = {
     setTimeout(() => msg.classList.add('hidden'), 2000);
   });
 
-  const favBtn = document.querySelector('[data-fav]');
+  const favBtn = document.querySelector<HTMLElement>('[data-fav]');
   favBtn?.addEventListener('click', async () => {
     const id = favBtn.dataset.fav!;
     const res = await fetch('/api/favoritos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ producto_id: Number(id) }) });
@@ -162,7 +162,7 @@ const jsonLd = {
     setTimeout(() => msg.classList.add('hidden'), 2000);
   });
 
-  const form = document.querySelector('[data-valoracion]');
+  const form = document.querySelector<HTMLFormElement>('[data-valoracion]');
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const fd = new FormData(form as HTMLFormElement);

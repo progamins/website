@@ -1,7 +1,8 @@
 ---
 import AdminLayout from '../../../components/admin/AdminLayout.astro';
 import { getPagos, getEstadisticasPago, formatEUR } from '../../../lib/pagos';
-const { estado = 'todos', gateway = 'todos' } = Astro.url.searchParams;
+const estado = Astro.url.searchParams.get('estado') ?? 'todos';
+const gateway = Astro.url.searchParams.get('gateway') ?? 'todos';
 const pagos = getPagos({ estado, gateway });
 const stats = getEstadisticasPago();
 const estadoColor: Record<string, string> = { aprobado: 'bg-green-500/15 text-green-400', pendiente: 'bg-yellow-500/15 text-yellow-400', fallido: 'bg-red-500/15 text-red-400', reembolsado: 'bg-blue-500/15 text-blue-400' };
@@ -22,9 +23,9 @@ const neto = stats.neto;
       <div class="rounded-2xl border border-white/10 bg-ink-2 p-5">
         <div class="flex items-center justify-between">
           <span class="text-sm text-gray-400">{c.label}</span>
-          <svg class={["h-5 w-5", c.color]} fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d={c.icon}/></svg>
+          <svg class:list={["h-5 w-5", c.color]} fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d={c.icon}/></svg>
         </div>
-        <p class={["mt-2 font-display text-2xl", c.color]}>{formatEUR(c.value)}</p>
+        <p class:list={["mt-2 font-display text-2xl", c.color]}>{formatEUR(c.value)}</p>
       </div>
     ))}
     <div class="rounded-2xl border border-gold/40 bg-gradient-to-br from-ink-2 to-ink-3 p-5">

@@ -119,7 +119,7 @@ const ayuda = [
 </footer>
 
 <script>
-  document.querySelectorAll('[data-newsletter]').forEach((form) => {
+  document.querySelectorAll<HTMLFormElement>('[data-newsletter]').forEach((form) => {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = (form.querySelector('[name=email]') as HTMLInputElement).value;
