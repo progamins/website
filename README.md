@@ -104,6 +104,20 @@ Detalles en [`web/README.md`](web/README.md).
 
 ---
 
+## 🤖 Asistente IA (RAG) — `ai-search/`
+
+Microservicio de **búsqueda semántica y RAG** sobre el catálogo real de la tienda:
+
+- **FastAPI** (Python) desplegado en **Vercel Python serverless**
+- **Supabase PostgreSQL + pgvector** (embeddings, índice IVF, similitud coseno, RLS activada)
+- **OpenAI** (`text-embedding-3-small` + `gpt-4o-mini`) con proveedor alternativo **Ollama** local
+- La tienda lo consume vía **proxy server-side** (`/api/asistente`) — la URL y las claves nunca llegan al navegador
+- Página del asistente: `/asistente` · Ingesta idempotente: `web/scripts/ingest-ai.mjs`
+
+Documentación completa (arquitectura, setup de Supabase, deploy en Vercel, API): [`ai-search/README.md`](ai-search/README.md)
+
+---
+
 ## 📄 Versión legacy (PHP)
 
 La carpeta raíz conserva el sitio original en **PHP procedural + MySQLi** (`index.php`, `admin/`, `includes/`, `setup_database.sql`). Se mantiene a modo de referencia histórica; el desarrollo activo continúa en `web/`.

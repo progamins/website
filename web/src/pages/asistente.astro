@@ -1,0 +1,154 @@
+---
+import Layout from '../components/Layout.astro';
+const ejemplos = [
+  'Un regalo elegante para aniversario',
+  'Algo con plata y piedras andinas',
+  'Pulseras hasta S/ 150',
+  'Aretes para uso diario',
+];
+---
+<Layout title="Asistente IA · Chollo & Glam" description="Encuentra la joya perfecta con nuestro asistente de compras con IA: búsqueda semántica sobre el catálogo.">
+  <section class="mx-auto max-w-3xl px-4 py-16 sm:px-6">
+    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-gold">Búsqueda inteligente</p>
+    <h1 class="mt-2 font-display text-4xl text-ink">Asistente de compras <span class="text-gold">IA</span></h1>
+    <p class="mt-3 max-w-xl text-ink-soft/80">
+      Describe lo que buscas con tus propias palabras — el asistente entiende el significado, no solo palabras clave,
+      y recomienda productos del catálogo real.
+    </p>
+
+    <form id="ai-form" class="mt-8 flex gap-2">
+      <input
+        id="ai-input"
+        name="q"
+        maxlength="500"
+        autocomplete="off"
+        placeholder="Ej.: un regalo elegante para mi mamá que le gusten los collares"
+        class="flex-1 rounded-full border border-ink/15 bg-surface px-5 py-3 text-ink placeholder-ink-soft/50 outline-none focus:border-gold"
+      />
+      <button
+        id="ai-btn"
+        type="submit"
+        class="rounded-full bg-ink px-6 py-3 font-semibold text-cream transition-colors hover:bg-ink-3 disabled:opacity-50"
+      >Preguntar</button>
+    </form>
+
+    <div class="mt-4 flex flex-wrap gap-2" id="ai-chips">
+      {ejemplos.map((e) => (
+        <button type="button" class="rounded-full border border-ink/15 px-4 py-1.5 text-sm text-ink-soft transition-colors hover:border-gold hover:text-ink" data-q={e}>{e}</button>
+      ))}
+    </div>
+
+    <div id="ai-answer" class="mt-8 hidden rounded-2xl border border-ink/10 bg-surface p-6"></div>
+
+    <div id="ai-error" class="mt-8 hidden rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"></div>
+
+    <p class="mt-12 text-center text-xs text-ink-soft/50">
+      Asistente RAG — FastAPI · Supabase pgvector · OpenAI. Solo recomienda productos del catálogo.
+    </p>
+  </section>
+</Layout>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('#ai-form');
+  const input = document.querySelector<HTMLInputElement>('#ai-input');
+  const btn = document.querySelector<HTMLButtonElement>('#ai-btn');
+  const answerEl = document.querySelector<HTMLElement>('#ai-answer');
+  const errorEl = document.querySelector<HTMLElement>('#ai-error');
+
+  function mostrarError(msg: string) {
+    if (!answerEl || !errorEl) return;
+    answerEl.classList.add('hidden');
+    errorEl.textContent = msg;
+    errorEl.classList.remove('hidden');
+  }
+
+  /** Crea elementos con textContent (nunca innerHTML con datos externos — previene XSS). */
+  function render(data: { answer?: string; sources?: Array<{ metadata?: Record<string, unknown> }> }) {
+    if (!answerEl || !errorEl) return;
+    errorEl.classList.add('hidden');
+    answerEl.replaceChildren();
+    answerEl.classList.remove('hidden');
+
+    if (data.answer) {
+      const p = document.createElement('p');
+      p.className = 'whitespace-pre-line leading-relaxed text-ink';
+      p.textContent = data.answer;
+      answerEl.appendChild(p);
+    }
+
+    const sources = (data.sources ?? []).filter((s) => s.metadata);
+    if (sources.length) {
+      const title = document.createElement('p');
+      title.className = 'mt-6 text-xs font-semibold uppercase tracking-widest text-ink-soft/60';
+      title.textContent = 'Productos encontrados';
+      answerEl.appendChild(title);
+
+      const grid = document.createElement('div');
+      grid.className = 'mt-3 grid gap-3 sm:grid-cols-2';
+      for (const s of sources) {
+        const m = s.metadata ?? {};
+        const a = document.createElement('a');
+        a.href = String(m.url ?? '#');
+        a.className = 'flex items-center gap-3 rounded-xl border border-ink/10 bg-cream p-3 transition-colors hover:border-gold';
+        const img = document.createElement('img');
+        img.src = String(m.imagen ?? '/assets/placeholder.svg');
+        img.alt = String(m.titulo ?? 'Producto');
+        img.className = 'h-14 w-14 rounded-lg object-cover';
+        img.loading = 'lazy';
+        const div = document.createElement('div');
+        const t = document.createElement('p');
+        t.className = 'text-sm font-semibold text-ink';
+        t.textContent = String(m.titulo ?? 'Producto');
+        const pr = document.createElement('p');
+        pr.className = 'text-sm text-gold';
+        pr.textContent = String(m.precio ?? '');
+        const cat = document.createElement('p');
+        cat.className = 'text-xs text-ink-soft/70';
+        cat.textContent = String(m.categoria ?? '');
+        div.append(t, pr, cat);
+        a.append(img, div);
+        grid.appendChild(a);
+      }
+      answerEl.appendChild(grid);
+    }
+  }
+
+  async function preguntar(q: string) {
+    if (!btn || !input) return;
+    btn.disabled = true;
+    btn.textContent = 'Pensando…';
+    try {
+      const res = await fetch('/api/asistente', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: q }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) {
+        mostrarError(data.error ?? 'No se pudo obtener una respuesta. Inténtalo de nuevo.');
+      } else {
+        render(data);
+      }
+    } catch {
+      mostrarError('Error de conexión con el asistente.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Preguntar';
+    }
+  }
+
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const q = input?.value.trim() ?? '';
+    if (q.length < 3) { mostrarError('Escribe al menos 3 caracteres.'); return; }
+    preguntar(q);
+  });
+
+  document.querySelectorAll('#ai-chips [data-q]').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      const q = (chip as HTMLElement).dataset.q ?? '';
+      if (input) input.value = q;
+      preguntar(q);
+    });
+  });
+</script>

@@ -1,0 +1,17 @@
+# Secretos — nunca commitear
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Vercel
+.vercel/
+
+# Sistema
+.DS_Store
+Thumbs.db
