@@ -4,11 +4,10 @@ import path from 'node:path';
 
 /**
  * Resuelve la ruta de la BD según el entorno:
- *  - Local/hosting tradicional: data/chollo.db (compartida, persistente).
- *  - Serverless (Vercel): el bundle es read-only, así que la BD se copia
- *    a /tmp en el primer acceso de cada instancia (escribible). La tienda
- *    funciona completa; los datos nuevos viven mientras la instancia
- *    permanezca caliente (suficiente para demo).
+ *  - Local/hosting tradicional: data/chollo.db (persistente).
+ *  - Serverless (Vercel): el bundle es read-only — la BD se copia a /tmp
+ *    en el primer acceso de cada instancia. Si la copia fallara, se abre
+ *    la original en modo lectura: el catálogo sigue funcionando.
  */
 function resolverDbPath(): string {
   const origen = path.join(process.cwd(), 'data', 'chollo.db');
@@ -19,16 +18,23 @@ function resolverDbPath(): string {
     if (!fs.existsSync(destino)) {
       fs.copyFileSync(origen, destino);
     }
+    return destino;
   } catch {
-    // Si la copia falla, abrir la original en modo lectura
+    return origen; // degradación: solo lectura
   }
-  return destino;
 }
 
 const dbPath = resolverDbPath();
 export const db = new Database(dbPath);
-db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
+
+// WAL solo si la BD es escribible (en el fallback read-only el pragma
+// lanzaría "attempt to write a readonly database" y tumbaría la función)
+try {
+  db.pragma('journal_mode = WAL');
+  db.pragma('foreign_keys = ON');
+} catch (e) {
+  console.error('[db] pragmas omitidos (BD de solo lectura):', e instanceof Error ? e.message : e);
+}
 
 export interface Categoria {
   id: number; nombre: string; slug: string; descripcion: string | null;
@@ -123,7 +129,7 @@ export const getTestimonios = () =>
   db.prepare('SELECT * FROM testimonios WHERE activo = 1 ORDER BY id DESC LIMIT 8').all() as Testimonio[];
 
 export const getInstagramFeed = () =>
-  db.prepare('SELECT * FROM instagram_feed WHERE activo = 1 ORDER BY id LIMIT 6').all() as { id: number; imagen: string; url: string }[];
+  db.prepare('SELECT * FROM instagram_feed WHERE activa = 1 ORDER BY id LIMIT 6').all() as { id: number; imagen: string; url: string }[];
 
 export const getValoracionesAprobadas = (productoId: number) =>
   db.prepare(`SELECT * FROM valoraciones WHERE producto_id = ? AND estado = 'aprobada' ORDER BY creado_en DESC`).all(productoId) as Valoracion[];
