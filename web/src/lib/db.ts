@@ -25,16 +25,31 @@ function resolverDbPath(): string {
 }
 
 const dbPath = resolverDbPath();
-export const db = new Database(dbPath);
 
-// WAL solo si la BD es escribible (en el fallback read-only el pragma
-// lanzaría "attempt to write a readonly database" y tumbaría la función)
-try {
-  db.pragma('journal_mode = WAL');
-  db.pragma('foreign_keys = ON');
-} catch (e) {
-  console.error('[db] pragmas omitidos (BD de solo lectura):', e instanceof Error ? e.message : e);
+// Inicialización LAZY: si la BD fallara al abrir (p. ej. binario nativo
+// ausente en el bundle), la función no muere al arrancar — /api/health
+// sigue respondiendo y el error queda aislado en las páginas de BD.
+let _db: Database.Database | null = null;
+function getDb(): Database.Database {
+  if (_db === null) {
+    _db = new Database(dbPath);
+    try {
+      _db.pragma('journal_mode = WAL');
+      _db.pragma('foreign_keys = ON');
+    } catch (e) {
+      console.error('[db] pragmas omitidos (BD de solo lectura):', e instanceof Error ? e.message : e);
+    }
+  }
+  return _db;
 }
+
+export const db: Database.Database = new Proxy({} as Database.Database, {
+  get(_t, prop) {
+    const real = getDb() as unknown as Record<string | symbol, unknown>;
+    const v = real[prop as string];
+    return typeof v === 'function' ? (v as (...a: unknown[]) => unknown).bind(real) : v;
+  },
+});
 
 export interface Categoria {
   id: number; nombre: string; slug: string; descripcion: string | null;
@@ -129,7 +144,7 @@ export const getTestimonios = () =>
   db.prepare('SELECT * FROM testimonios WHERE activo = 1 ORDER BY id DESC LIMIT 8').all() as Testimonio[];
 
 export const getInstagramFeed = () =>
-  db.prepare('SELECT * FROM instagram_feed WHERE activa = 1 ORDER BY id LIMIT 6').all() as { id: number; imagen: string; url: string }[];
+  db.prepare('SELECT * FROM instagram_feed WHERE activo = 1 ORDER BY id LIMIT 6').all() as { id: number; imagen: string; url: string }[];
 
 export const getValoracionesAprobadas = (productoId: number) =>
   db.prepare(`SELECT * FROM valoraciones WHERE producto_id = ? AND estado = 'aprobada' ORDER BY creado_en DESC`).all(productoId) as Valoracion[];
