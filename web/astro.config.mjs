@@ -10,7 +10,19 @@ const esVercel = process.env.VERCEL === '1' || !!process.env.VERCEL_REGION;
 
 export default defineConfig({
   output: 'server',
-  adapter: esVercel ? vercel() : node({ mode: 'standalone' }),
+  adapter: esVercel
+    ? vercel({
+        // rolldown (bundler interno de Astro 7) se usa en runtime y su
+        // binding nativa de Linux no queda en el bundle por el trazado:
+        // forzarla para x64 y arm64 (la función elige según plataforma)
+        includeFiles: [
+          'node_modules/@rolldown/binding-linux-x64-gnu/package.json',
+          'node_modules/@rolldown/binding-linux-x64-gnu/rolldown-binding.linux-x64-gnu.node',
+          'node_modules/@rolldown/binding-linux-arm64-gnu/package.json',
+          'node_modules/@rolldown/binding-linux-arm64-gnu/rolldown-binding.linux-arm64-gnu.node',
+        ],
+      })
+    : node({ mode: 'standalone' }),
   vite: {
     plugins: [tailwindcss()],
     // better-sqlite3 es un módulo nativo: dejarlo como dependencia externa
