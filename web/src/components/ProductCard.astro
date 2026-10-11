@@ -11,6 +11,9 @@ const descuento = producto.precio_original && producto.precio_original > product
       ? <img src={producto.imagen} alt={producto.nombre} loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
       : <div class="flex h-full items-center justify-center text-ink-soft/50"><span>Sin imagen</span></div>}
     <span class="absolute left-3 top-3 rounded-full bg-ink/85 px-2.5 py-0.5 text-[11px] font-semibold text-cream backdrop-blur">{producto.etiqueta ?? 'Nuevo'}</span>
+    {producto.precio_actual >= 199 && (
+      <span class="absolute bottom-3 left-3 rounded-full bg-emerald-600/95 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow">Envío gratis</span>
+    )}
     {descuento && <span class="absolute right-3 top-3 rounded-full bg-bronce px-2.5 py-0.5 text-[11px] font-bold text-white">-{descuento}%</span>}
     {producto.stock === 0 && (
       <div class="absolute inset-0 flex items-center justify-center bg-ink/50 backdrop-blur-[1px]">

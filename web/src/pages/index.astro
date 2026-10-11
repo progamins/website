@@ -3,6 +3,7 @@ import Layout from '../components/Layout.astro';
 import ProductCard from '../components/ProductCard.astro';
 import FlashTimer from '../components/FlashTimer.astro';
 import BannerCarousel from '../components/BannerCarousel.astro';
+import TrustBar from '../components/TrustBar.astro';
 import { getOfertaFlashActiva, getProductosDestacados, getNovedades, getCategorias, getColecciones, getTestimonios, getInstagramFeed } from '../lib/db';
 
 const oferta = getOfertaFlashActiva();
@@ -20,6 +21,23 @@ const sectionHeading = 'mt-2 font-display text-3xl text-ink sm:text-4xl';
 
   <!-- CARRUSEL DE BANNERS (a pantalla completa, sin textos) -->
   <BannerCarousel />
+
+  <!-- TRUST BAR: beneficios con iconos -->
+  <TrustBar />
+
+  <!-- CATEGORÍAS: navegación rápida con iconos -->
+  <nav aria-label="Comprar por categoría" class="mx-auto max-w-7xl px-4 pt-8 sm:px-6">
+    <div class="flex gap-2.5 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {categorias.slice(0, 10).map((c) => (
+        <a href={`/categoria/${c.slug}`} class="group flex shrink-0 items-center gap-2 rounded-full border border-ink/10 bg-surface py-2 pl-2 pr-4 shadow-sm transition hover:-translate-y-0.5 hover:border-gold/60 hover:shadow-md">
+          <span class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-sand ring-1 ring-ink/5">
+            {c.icono ? <img src={c.icono} alt="" class="h-5 w-5 object-contain" loading="lazy" /> : <span class="text-xs">◆</span>}
+          </span>
+          <span class="text-sm font-medium text-ink group-hover:text-gold-dark">{c.nombre}</span>
+        </a>
+      ))}
+    </div>
+  </nav>
 
   <!-- OFERTA FLASH (sección oscura de contraste) -->
   {oferta && (
