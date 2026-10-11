@@ -1,18 +1,20 @@
 import type { APIRoute } from 'astro';
 import fs from 'node:fs';
 import path from 'node:path';
+import { db } from '../../lib/db';
 
 /**
  * /api/health — diagnóstico de runtime sin depender de logs:
  * reporta el estado del entorno y de la capa de BD.
+ * (db se importa estáticamente: con el Proxy lazy el módulo nunca
+ * falla al cargar — la apertura real ocurre en el primer uso)
  */
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = () => {
   const cwd = process.cwd();
   const dbFile = path.join(cwd, 'data', 'chollo.db');
 
   let dbStatus: string;
   try {
-    const { db } = await import('../lib/db');
     const r = db.prepare('SELECT COUNT(*) n FROM productos').get() as { n: number };
     dbStatus = `ok (${r.n} productos)`;
   } catch (e) {

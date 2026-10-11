@@ -2,7 +2,8 @@
 dist/
 
 # base de datos SQLite (se genera con el seed)
-data/
+data/*
+!data/chollo.db
 *.db
 *.db-shm
 *.db-wal
