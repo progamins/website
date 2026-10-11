@@ -18,8 +18,6 @@ export default defineConfig({
         includeFiles: [
           'node_modules/@rolldown/binding-linux-x64-gnu/package.json',
           'node_modules/@rolldown/binding-linux-x64-gnu/rolldown-binding.linux-x64-gnu.node',
-          'node_modules/@rolldown/binding-linux-arm64-gnu/package.json',
-          'node_modules/@rolldown/binding-linux-arm64-gnu/rolldown-binding.linux-arm64-gnu.node',
         ],
       })
     : node({ mode: 'standalone' }),

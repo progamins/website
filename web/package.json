@@ -20,9 +20,7 @@
     "better-sqlite3": "^13.0.3",
     "tailwindcss": "^4.3.3",
     "@rolldown/binding-linux-x64-gnu": "1.2.13",
-    "@rolldown/binding-linux-arm64-gnu": "1.2.13",
-    "@img/sharp-linux-x64": "0.35.5",
-    "@img/sharp-linux-arm64": "0.35.5"
+    "@img/sharp-linux-x64": "0.35.5"
   },
   "allowScripts": {
     "esbuild": true,
