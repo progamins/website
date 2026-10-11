@@ -1,7 +1,31 @@
 import Database from 'better-sqlite3';
+import fs from 'node:fs';
 import path from 'node:path';
 
-const dbPath = path.join(process.cwd(), 'data', 'chollo.db');
+/**
+ * Resuelve la ruta de la BD según el entorno:
+ *  - Local/hosting tradicional: data/chollo.db (compartida, persistente).
+ *  - Serverless (Vercel): el bundle es read-only, así que la BD se copia
+ *    a /tmp en el primer acceso de cada instancia (escribible). La tienda
+ *    funciona completa; los datos nuevos viven mientras la instancia
+ *    permanezca caliente (suficiente para demo).
+ */
+function resolverDbPath(): string {
+  const origen = path.join(process.cwd(), 'data', 'chollo.db');
+  const esServerless = process.env.VERCEL === '1' || !!process.env.VERCEL_REGION;
+  if (!esServerless) return origen;
+  const destino = path.join('/tmp', 'chollo.db');
+  try {
+    if (!fs.existsSync(destino)) {
+      fs.copyFileSync(origen, destino);
+    }
+  } catch {
+    // Si la copia falla, abrir la original en modo lectura
+  }
+  return destino;
+}
+
+const dbPath = resolverDbPath();
 export const db = new Database(dbPath);
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');

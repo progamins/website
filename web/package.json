@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@astrojs/node": "^11.1.4",
+    "@astrojs/vercel": "^11.0.13",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.2.9",
     "bcryptjs": "^3.0.3",
@@ -20,7 +21,8 @@
     "tailwindcss": "^4.3.3"
   },
   "allowScripts": {
-    "esbuild": true
+    "esbuild": true,
+    "better-sqlite3@13.0.3": true
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
