@@ -22,6 +22,27 @@ const banners = getBanners();
         ))}
       </div>
 
+      <!-- HERO overlay: titular y CTAs sobre el carrusel -->
+      <div class="pointer-events-none absolute inset-0 z-[5] flex items-center justify-center bg-gradient-to-b from-ink/30 via-transparent to-ink/40">
+        <div class="max-w-3xl px-6 text-center">
+          <p class="text-xs uppercase tracking-[0.35em] text-gold-light drop-shadow-md sm:text-sm">Joyería y artesanía peruana</p>
+          <h1 class="mt-4 font-display text-4xl leading-tight text-cream drop-shadow-xl sm:text-6xl">
+            Piezas únicas,<br class="hidden sm:block" /> hechas a mano
+          </h1>
+          <p class="mx-auto mt-4 max-w-xl text-sm text-cream/85 drop-shadow sm:text-base">
+            Diseños exclusivos en plata, oro y fibras andinas. Envíos a todo el Perú y colecciones de autor.
+          </p>
+          <div class="pointer-events-auto mt-8 flex flex-wrap items-center justify-center gap-3">
+            <a href="/novedades" class="rounded-full bg-gold px-7 py-3 text-sm font-semibold text-ink shadow-lg shadow-gold/30 transition hover:-translate-y-0.5 hover:bg-gold-light">
+              Explorar novedades
+            </a>
+            <a href="/ofertas" class="rounded-full border border-cream/40 px-7 py-3 text-sm font-semibold text-cream backdrop-blur-sm transition hover:border-cream hover:bg-cream/10">
+              Ver ofertas
+            </a>
+          </div>
+        </div>
+      </div>
+
       {banners.length > 1 && (
         <>
           <button data-prev aria-label="Banner anterior"
