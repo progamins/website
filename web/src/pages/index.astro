@@ -82,8 +82,15 @@ const sectionHeading = 'mt-2 font-display text-3xl text-ink sm:text-4xl';
     <div class="flex gap-5 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {categorias.map((c) => (
         <a href={`/categoria/${c.slug}`} class="group flex shrink-0 flex-col items-center gap-2.5">
-          <div class="h-20 w-20 overflow-hidden rounded-full border border-ink/10 bg-surface shadow-sm transition group-hover:border-gold/60 group-hover:shadow-lg sm:h-24 sm:w-24">
-            {(c.icono ?? c.imagen) && <img src={c.icono ?? c.imagen} alt={c.nombre} loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />}
+          <div class="relative h-20 w-20 sm:h-24 sm:w-24">
+            <div class="h-full w-full overflow-hidden rounded-full border-2 border-white shadow-md ring-1 ring-ink/10 transition duration-300 group-hover:ring-2 group-hover:ring-gold/70">
+              {c.imagen && <img src={c.imagen} alt={c.nombre} loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-110" />}
+            </div>
+            {c.icono && (
+              <span class="absolute -bottom-1.5 -right-1.5 flex h-8 w-8 items-center justify-center overflow-hidden rounded-full shadow-lg ring-2 ring-white sm:h-9 sm:w-9">
+                <img src={c.icono} alt="" class="h-full w-full object-cover" loading="lazy" />
+              </span>
+            )}
           </div>
           <span class="text-center text-xs font-medium text-ink-soft group-hover:text-gold-dark">{c.nombre}</span>
         </a>
