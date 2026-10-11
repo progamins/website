@@ -91,7 +91,161 @@ const items = [
         </a>
       ))}
     </nav>
-  </body>
+  
+<script>
+  // ================================================================
+  // CG AdminUI — modales y toasts de producción (sin dependencias)
+  // ================================================================
+  (function () {
+    'use strict';
+
+    // ---------- Toasts apilados ----------
+    let toastWrap = null;
+    function getWrap() {
+      if (!toastWrap) {
+        toastWrap = document.createElement('div');
+        toastWrap.className = 'fixed right-4 top-4 z-[999] flex w-80 flex-col gap-2';
+        document.body.appendChild(toastWrap);
+      }
+      return toastWrap;
+    }
+    const TONES = {
+      success: { icon: '✓', bg: 'bg-emerald-500/15', color: 'text-emerald-300', bar: 'bg-emerald-400', ring: 'ring-emerald-400/30' },
+      error:   { icon: '✕', bg: 'bg-red-500/15',      color: 'text-red-300',      bar: 'bg-red-400',      ring: 'ring-red-400/30' },
+      info:    { icon: '◆', bg: 'bg-gold/15',         color: 'text-gold-light',   bar: 'bg-gold',         ring: 'ring-gold/30' },
+    };
+    window.cgToast = function (opts) {
+      const o = typeof opts === 'string' ? { message: opts } : (opts || {});
+      const t = TONES[o.tone || 'info'] || TONES.info;
+      const dur = o.duration || 3800;
+      const el = document.createElement('div');
+      el.className = 'pointer-events-auto relative overflow-hidden rounded-2xl border border-white/10 bg-ink-2/95 p-4 pr-10 shadow-2xl ring-1 ' + t.ring + ' cg-toast-in';
+      el.innerHTML =
+        '<div class="flex items-start gap-3">' +
+          '<span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ' + t.bg + ' ' + t.color + ' text-sm font-bold">' + t.icon + '</span>' +
+          '<div class="min-w-0">' +
+            (o.title ? '<p class="text-sm font-semibold text-white">' + o.title + '</p>' : '') +
+            (o.message ? '<p class="mt-0.5 text-xs leading-relaxed text-gray-400">' + o.message + '</p>' : '') +
+          '</div>' +
+          '<button aria-label="Cerrar" class="absolute right-2.5 top-2 text-xl leading-none text-gray-500 transition hover:text-white">×</button>' +
+        '</div>' +
+        '<span class="absolute bottom-0 left-0 h-0.5 ' + t.bar + '" style="animation: cgBar ' + dur + 'ms linear forwards"></span>';
+      getWrap().appendChild(el);
+      const close = () => { el.classList.add('cg-toast-out'); setTimeout(() => el.remove(), 220); };
+      el.querySelector('button').onclick = close;
+      setTimeout(close, dur);
+      return close;
+    };
+
+    // ---------- Modal de confirmación (Promise) ----------
+    let modalAbierto = false;
+    window.cgConfirm = function (opts) {
+      const o = opts || {};
+      return new Promise((resolve) => {
+        if (modalAbierto) return resolve(false);
+        modalAbierto = true;
+        const map = {
+          danger:  { icon: '!', bg: 'bg-red-500/15',     color: 'text-red-300',    btn: 'bg-red-500 hover:bg-red-600',    ring: 'ring-red-400/30' },
+          warning: { icon: '?', bg: 'bg-gold/15',        color: 'text-gold-light', btn: 'bg-gold hover:bg-gold-dark',    ring: 'ring-gold/30' },
+          success: { icon: '✓', bg: 'bg-emerald-500/15',  color: 'text-emerald-300', btn: 'bg-emerald-500 hover:bg-emerald-600', ring: 'ring-emerald-400/30' },
+        };
+        const t = map[o.tone || 'danger'] || map.danger;
+        const back = document.createElement('div');
+        back.className = 'fixed inset-0 z-[1000] flex items-center justify-center bg-ink/80 p-4 backdrop-blur-sm cg-fade-in';
+        back.innerHTML =
+          '<div role="dialog" aria-modal="true" class="w-full max-w-md rounded-2xl border border-white/10 bg-ink-2 p-6 shadow-2xl ring-1 ' + t.ring + ' cg-modal-in">' +
+            '<div class="flex items-start gap-4">' +
+              '<span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full ' + t.bg + ' ' + t.color + ' text-xl font-bold">' + t.icon + '</span>' +
+              '<div class="min-w-0">' +
+                '<h3 class="font-display text-lg leading-snug text-white">' + (o.title || '¿Confirmar acción?') + '</h3>' +
+                (o.message ? '<p class="mt-1.5 text-sm leading-relaxed text-gray-400">' + o.message + '</p>' : '') +
+              '</div>' +
+            '</div>' +
+            '<div class="mt-6 flex justify-end gap-2.5">' +
+              '<button data-no class="rounded-full border border-white/15 px-5 py-2.5 text-sm font-medium text-gray-300 transition hover:border-white/40 hover:text-white">' + (o.cancelText || 'Cancelar') + '</button>' +
+              '<button data-yes class="rounded-full px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5 ' + t.btn + '">' + (o.confirmText || 'Confirmar') + '</button>' +
+            '</div>' +
+          '</div>';
+        const fin = (ok) => {
+          modalAbierto = false;
+          back.classList.add('cg-fade-out');
+          setTimeout(() => back.remove(), 160);
+          resolve(ok);
+        };
+        back.querySelector('[data-yes]').onclick = () => fin(true);
+        back.querySelector('[data-no]').onclick = () => fin(false);
+        back.addEventListener('click', (e) => { if (e.target === back) fin(false); });
+        const onKey = (e) => { if (e.key === 'Escape') { document.removeEventListener('keydown', onKey); fin(false); } };
+        document.addEventListener('keydown', onKey);
+        document.body.appendChild(back);
+        back.querySelector('[data-no]').focus();
+      });
+    };
+
+    // ---------- Interceptación: formularios con data-confirm ----------
+    document.addEventListener('submit', (e) => {
+      const form = e.target;
+      if (!(form instanceof HTMLFormElement) || !form.dataset.confirm) return;
+      if (form.dataset.cgConfirmed === '1') { delete form.dataset.cgConfirmed; return; }
+      e.preventDefault();
+      window.cgConfirm({
+        title: form.dataset.confirmTitle,
+        message: form.dataset.confirm,
+        confirmText: form.dataset.confirmText,
+        tone: form.dataset.confirmTone || 'danger',
+      }).then((ok) => {
+        if (!ok) return;
+        form.dataset.cgConfirmed = '1';
+        form.requestSubmit();
+      });
+    }, true);
+
+    // ---------- Estados de carga (anti doble-submit) ----------
+    document.addEventListener('submit', (e) => {
+      const form = e.target;
+      if (!(form instanceof HTMLFormElement)) return;
+      const esConfirmPendiente = form.dataset.confirm && form.dataset.cgConfirmed !== '1';
+      if (esConfirmPendiente) return;
+      setTimeout(() => {
+        form.querySelectorAll('button').forEach((b) => {
+          if (b.type !== 'submit' && !form.checkValidity) return;
+          if (b.hasAttribute('data-yes') || b.hasAttribute('data-no')) return;
+          b.disabled = true;
+          b.dataset.cgLabel = b.innerHTML;
+          b.style.minWidth = Math.max(b.offsetWidth, 44) + 'px';
+          b.innerHTML = '<span class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white align-middle"></span>';
+        });
+      }, 0);
+    });
+
+    // ---------- Flash: ?ok= / ?error= → toast elegante + URL limpia ----------
+    try {
+      const params = new URLSearchParams(location.search);
+      const ok = params.get('ok');
+      const err = params.get('error');
+      if (ok) { cgToast({ title: 'Acción completada', message: ok, tone: 'success' }); params.delete('ok'); }
+      if (err) { cgToast({ title: 'Ha ocurrido un problema', message: err, tone: 'error', duration: 6000 }); params.delete('error'); }
+      if (ok || err) {
+        const qs = params.toString();
+        history.replaceState({}, '', location.pathname + (qs ? '?' + qs : ''));
+      }
+    } catch (_) {}
+  })();
+</script>
+
+<style is:global>
+  @keyframes cgBar { from { width: 100%; } to { width: 0%; } }
+  .cg-toast-in { animation: cgToastIn 0.25s cubic-bezier(.16,1,.3,1) both; }
+  @keyframes cgToastIn { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+  .cg-toast-out { opacity: 0; transform: translateX(24px); transition: all 0.2s; }
+  .cg-fade-in { animation: cgFadeIn 0.18s ease both; }
+  @keyframes cgFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .cg-fade-out { opacity: 0 !important; transition: opacity 0.15s; }
+  .cg-modal-in { animation: cgModalIn 0.22s cubic-bezier(.16,1,.3,1) both; }
+  @keyframes cgModalIn { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
+</style>
+
+</body>
 </html>
 
 <script>

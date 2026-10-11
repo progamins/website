@@ -12,5 +12,5 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
     recalcularValoracion(v.producto_id);
     addNotificacion('info', 'Valoración aprobada', '/admin/moderacion');
   }
-  return redirect('/admin/moderacion');
+  return redirect('/admin/moderacionok=Valoración+aprobada');
 };

@@ -6,5 +6,5 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   if (!user || user.rol === 'cliente') return redirect('/login');
   const form = await request.formData();
   db.prepare("UPDATE valoraciones SET estado = 'rechazada' WHERE id = ?").run(Number(form.get('id')));
-  return redirect('/admin/moderacion');
+  return redirect('/admin/moderacionok=Valoración+rechazada');
 };

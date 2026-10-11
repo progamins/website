@@ -9,5 +9,5 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   const estado = (form.get('estado') ?? '').toString();
   const validos = ['pendiente', 'procesando', 'enviado', 'entregado', 'cancelado'];
   if (validos.includes(estado)) db.prepare('UPDATE pedidos SET estado = ? WHERE id = ?').run(estado, id);
-  return redirect('/admin/pedidos');
+  return redirect('/admin/pedidosok=Estado+del+pedido+actualizado');
 };

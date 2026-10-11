@@ -81,7 +81,7 @@ const neto = stats.neto;
                   </>
                 )}
                 {p.tipo === 'pago' && p.estado === 'aprobado' && (
-                  <form action="/admin/pagos/reembolsar" method="post" onsubmit="return confirm('¿Reembolsar este pedido (monto total cobrado)?')">
+                  <form action="/admin/pagos/reembolsar" method="post" data-confirm="Se registrará el reembolso del monto total cobrado de este pedido. La acción queda en el historial." data-confirm-title="Reembolsar pago" data-confirm-text="Reembolsar" data-confirm-tone="warning">
                     <input type="hidden" name="pedido_id" value={p.pedido_id} />
                     <button class="rounded-full border border-white/15 px-3 py-1.5 text-blue-400 hover:border-blue-400">Reembolsar</button>
                   </form>

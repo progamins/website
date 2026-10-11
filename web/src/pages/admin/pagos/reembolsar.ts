@@ -9,5 +9,5 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   const pedidoId = Number(form.get('pedido_id'));
   const row = db.prepare('SELECT total FROM pedidos WHERE id = ?').get(pedidoId) as { total: number } | undefined;
   if (row) crearReembolso(pedidoId, row.total, 'Reembolso total desde el panel de administración');
-  return redirect('/admin/pagos');
+  return redirect('/admin/pagosok=Pago+reembolsado');
 };

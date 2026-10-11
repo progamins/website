@@ -6,5 +6,5 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   if (!user || user.rol === 'cliente') return redirect('/login');
   const form = await request.formData();
   db.prepare('DELETE FROM ofertas_flash WHERE id = ?').run(Number(form.get('id')));
-  return redirect('/admin/ofertas');
+  return redirect('/admin/ofertasok=Oferta+eliminada');
 };

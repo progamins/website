@@ -8,5 +8,5 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   const id = Number(form.get('id'));
   const c = db.prepare('SELECT activa FROM categorias WHERE id = ?').get(id) as { activa: number } | undefined;
   if (c) db.prepare('UPDATE categorias SET activa = ? WHERE id = ?').run(c.activa ? 0 : 1, id);
-  return redirect('/admin/categorias');
+  return redirect('/admin/categoriasok=Categoría+actualizada');
 };

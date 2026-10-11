@@ -34,7 +34,7 @@ const categorias = db.prepare('SELECT * FROM categorias ORDER BY id').all() as C
                 <div class="flex justify-end gap-2">
                   <a href={`/admin/categorias/editar/${c.id}`} class="rounded-full border border-white/15 px-3 py-1.5 text-xs text-gray-300 hover:border-gold hover:text-gold">Editar</a>
                   <form action="/admin/categorias/toggle" method="post"><input type="hidden" name="id" value={c.id} /><button class="rounded-full border border-white/15 px-3 py-1.5 text-xs text-gray-300 hover:border-blue-400 hover:text-blue-400">{c.activa ? 'Desactivar' : 'Activar'}</button></form>
-                  <form action="/admin/categorias/eliminar" method="post" onsubmit="return confirm('¿Eliminar esta categoría?')"><input type="hidden" name="id" value={c.id} /><button class="rounded-full border border-white/15 px-3 py-1.5 text-xs text-gray-300 hover:border-red-400 hover:text-red-400">Eliminar</button></form>
+                  <form action="/admin/categorias/eliminar" method="post" data-confirm="Eliminar esta categoría. Los productos que la usen quedarán sin categoría." data-confirm-title="Eliminar categoría" data-confirm-text="Sí, eliminar" data-confirm-tone="danger"><input type="hidden" name="id" value={c.id} /><button class="rounded-full border border-white/15 px-3 py-1.5 text-xs text-gray-300 hover:border-red-400 hover:text-red-400">Eliminar</button></form>
                 </div>
               </td>
             </tr>
