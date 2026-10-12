@@ -1,24 +1,91 @@
 ---
 import Layout from '../components/Layout.astro';
+export const prerender = false;
 const next = Astro.url.searchParams.get('next') || '/';
+const error = Astro.url.searchParams.get('error');
 const user = Astro.locals.user;
 if (user) return Astro.redirect('/cuenta');
+const nextSeguro = next.startsWith('/') && !next.startsWith('/admin') ? next : '/';
 ---
-<Layout title="Registro · Chollo & Glam">
+<Layout title="Crear cuenta · Chollo & Glam">
   <section class="mx-auto flex min-h-[60vh] max-w-md flex-col justify-center px-4 py-16 sm:px-6">
     <div class="text-center">
-      <p class="text-[11px] uppercase tracking-[0.25em] text-gold">Únete a nosotros</p>
-      <h1 class="mt-2 font-display text-4xl text-ink">Crear cuenta</h1>
-      <p class="mt-2 text-sm text-ink-soft/70">Únete a Chollo &amp; Glam</p>
+      <p class="flex items-center justify-center gap-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-gold-dark"><span class="h-px w-8 bg-gold/60" aria-hidden="true"></span>Únete a nosotros<span class="h-px w-8 bg-gold/60" aria-hidden="true"></span></p>
+      <h1 class="mt-3 font-display text-4xl text-ink">Crear cuenta</h1>
+      <p class="mt-2 text-sm text-ink-soft">Guarda tus favoritos y sigue tus pedidos en un solo lugar.</p>
     </div>
-    <form action="/api/auth/registro" method="post" class="mt-8 space-y-4">
-      <input type="hidden" name="next" value={next} />
-      <input name="nombre" required placeholder="Nombre" class="w-full rounded-xl border border-ink/15 bg-surface px-4 py-3 text-ink placeholder-ink-soft/50 outline-none focus:border-gold" />
-      <input name="apellidos" placeholder="Apellidos" class="w-full rounded-xl border border-ink/15 bg-surface px-4 py-3 text-ink placeholder-ink-soft/50 outline-none focus:border-gold" />
-      <input name="email" type="email" required placeholder="Email" class="w-full rounded-xl border border-ink/15 bg-surface px-4 py-3 text-ink placeholder-ink-soft/50 outline-none focus:border-gold" />
-      <input name="password" type="password" required placeholder="Contraseña (mín. 8 caracteres)" class="w-full rounded-xl border border-ink/15 bg-surface px-4 py-3 text-ink placeholder-ink-soft/50 outline-none focus:border-gold" />
-      <button class="w-full rounded-full bg-ink-2 px-6 py-3 font-semibold text-cream transition hover:bg-vino-dark">Registrarme</button>
+
+    {error && <p role="alert" class="mt-6 rounded-xl border border-bronce/40 bg-bronce/10 px-4 py-3 text-sm text-bronce">{error}</p>}
+
+    <form action="/api/auth/registro" method="post" class="mt-8 space-y-4" data-auth-form>
+      <input type="hidden" name="next" value={nextSeguro} />
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label for="reg-nombre" class="mb-1.5 block text-sm font-medium text-ink">Nombre</label>
+          <input id="reg-nombre" name="nombre" required maxlength="50" autocomplete="given-name" placeholder="Tu nombre"
+            class="w-full rounded-xl border border-sand-2 bg-surface px-4 py-3 text-ink placeholder-ink-soft/50 outline-none transition focus:border-gold" />
+        </div>
+        <div>
+          <label for="reg-apellidos" class="mb-1.5 block text-sm font-medium text-ink">Apellidos <span class="font-normal text-ink-soft/60">(opcional)</span></label>
+          <input id="reg-apellidos" name="apellidos" maxlength="50" autocomplete="family-name" placeholder="Tus apellidos"
+            class="w-full rounded-xl border border-sand-2 bg-surface px-4 py-3 text-ink placeholder-ink-soft/50 outline-none transition focus:border-gold" />
+        </div>
+      </div>
+      <div>
+        <label for="reg-email" class="mb-1.5 block text-sm font-medium text-ink">Correo electrónico</label>
+        <input id="reg-email" name="email" type="email" required maxlength="254" autocomplete="email" placeholder="tu@email.com"
+          class="w-full rounded-xl border border-sand-2 bg-surface px-4 py-3 text-ink placeholder-ink-soft/50 outline-none transition focus:border-gold" />
+      </div>
+      <div>
+        <label for="reg-pass" class="mb-1.5 block text-sm font-medium text-ink">Contraseña</label>
+        <div class="relative">
+          <input id="reg-pass" name="password" type="password" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="Mínimo 8 caracteres"
+            class="w-full rounded-xl border border-sand-2 bg-surface px-4 py-3 pr-12 text-ink placeholder-ink-soft/50 outline-none transition focus:border-gold" />
+          <button type="button" data-toggle-pass aria-label="Mostrar contraseña" aria-pressed="false"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-ink-soft/60 transition hover:text-ink">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.5 12S5.5 5.5 12 5.5 21.5 12 21.5 12 18.5 18.5 12 18.5 2.5 12 2.5 12z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div>
+        <label for="reg-pass2" class="mb-1.5 block text-sm font-medium text-ink">Confirmar contraseña</label>
+        <input id="reg-pass2" name="password2" type="password" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="Repite la contraseña"
+          class="w-full rounded-xl border border-sand-2 bg-surface px-4 py-3 text-ink placeholder-ink-soft/50 outline-none transition focus:border-gold" />
+      </div>
+      <p data-match-msg class="hidden text-sm text-bronce" role="alert"></p>
+      <button class="w-full rounded-full bg-ink-2 px-6 py-3 font-semibold text-cream transition hover:bg-vino-dark disabled:cursor-not-allowed disabled:opacity-60" data-submit>Crear mi cuenta</button>
     </form>
-    <p class="mt-6 text-center text-sm text-ink-soft/70">¿Ya tienes cuenta? <a href="/login" class="font-medium text-gold hover:text-gold-dark">Inicia sesión</a></p>
+
+    <p class="mt-6 text-center text-sm text-ink-soft/70">¿Ya tienes cuenta? <a href={`/login${nextSeguro !== '/' ? `?next=${encodeURIComponent(nextSeguro)}` : ''}`} class="font-medium text-gold hover:text-gold-dark">Inicia sesión</a></p>
   </section>
 </Layout>
+
+<script>
+  // Mostrar/ocultar contraseña
+  document.querySelectorAll<HTMLButtonElement>('[data-toggle-pass]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const input = btn.parentElement?.querySelector('input') as HTMLInputElement | null;
+      if (!input) return;
+      const mostrar = input.type === 'password';
+      input.type = mostrar ? 'text' : 'password';
+      btn.setAttribute('aria-pressed', String(mostrar));
+      btn.setAttribute('aria-label', mostrar ? 'Ocultar contraseña' : 'Mostrar contraseña');
+    });
+  });
+
+  // Validación de coincidencia + estado de carga
+  document.querySelectorAll<HTMLFormElement>('form[data-auth-form]').forEach((form) => {
+    form.addEventListener('submit', (e) => {
+      const pass = (form.querySelector('[name=password]') as HTMLInputElement).value;
+      const pass2 = (form.querySelector('[name=password2]') as HTMLInputElement | null)?.value;
+      const msg = form.querySelector('[data-match-msg]') as HTMLElement | null;
+      if (pass2 !== undefined && pass !== pass2) {
+        e.preventDefault();
+        if (msg) { msg.textContent = 'Las contraseñas no coinciden.'; msg.classList.remove('hidden'); }
+        return;
+      }
+      const btn = form.querySelector('[data-submit]') as HTMLButtonElement | null;
+      if (btn) { btn.disabled = true; btn.textContent = 'Creando cuenta…'; }
+    });
+  });
+</script>

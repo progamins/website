@@ -56,9 +56,9 @@ export function esEmailValido(email: string): boolean {
 }
 
 
-export function crearSesion(usuarioId: number): string {
+export function crearSesion(usuarioId: number, dias = SESSION_DAYS): string {
   const token = crypto.randomBytes(32).toString('hex');
-  const expira = new Date(Date.now() + SESSION_DAYS * 24 * 3600 * 1000)
+  const expira = new Date(Date.now() + dias * 24 * 3600 * 1000)
     .toISOString().slice(0, 19).replace('T', ' ');
   db.prepare('INSERT INTO sesiones (token, usuario_id, expira_en) VALUES (?,?,?)').run(token, usuarioId, expira);
   return token;
@@ -107,4 +107,78 @@ export function registrarUsuario(nombre: string, apellidos: string, email: strin
   const r = db.prepare("INSERT INTO usuarios (nombre, apellidos, email, password, rol) VALUES (?,?,?,?,'cliente')")
     .run(nombre, apellidos, email, hash);
   return { ok: true, id: Number(r.lastInsertRowid) };
+}
+
+// ===== Recuperación de contraseña =====
+// El token viaja por email (una sola vez, caduca en 1 h); en la BD solo
+// se guarda su hash SHA-256. Al usarlo se invalida y se cierran todas
+// las sesiones activas del usuario.
+
+const RESET_MINUTOS = 60;
+
+/** Crea un token de recuperación para un usuario. Devuelve el token en claro. */
+export function crearTokenReset(usuarioId: number): string {
+  const token = crypto.randomBytes(32).toString('hex');
+  const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  const expira = new Date(Date.now() + RESET_MINUTOS * 60_000).toISOString().slice(0, 19).replace('T', ' ');
+  db.prepare('INSERT INTO password_resets (usuario_id, token_hash, expira_en) VALUES (?,?,?)')
+    .run(usuarioId, tokenHash, expira);
+  return token;
+}
+
+/**
+ * Valida y consume un token de recuperación.
+ * Devuelve el usuario_id si el token es válido, o null si no existe,
+ * caducó o ya fue utilizado.
+ */
+export function consumirTokenReset(token: string): number | null {
+  const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  const row = db.prepare(
+    `SELECT id, usuario_id FROM password_resets
+     WHERE token_hash = ? AND usado_en IS NULL AND expira_en > datetime('now')`
+  ).get(tokenHash) as { id: number; usuario_id: number } | undefined;
+  if (!row) return null;
+  db.prepare(`UPDATE password_resets SET usado_en = datetime('now') WHERE id = ?`).run(row.id);
+  return row.usuario_id;
+}
+
+/** Cambia la contraseña de un usuario e invalida TODAS sus sesiones activas. */
+export function cambiarPassword(usuarioId: number, nuevaPassword: string): { ok: boolean; error?: string } {
+  if (nuevaPassword.length < 8) return { ok: false, error: 'La contraseña debe tener al menos 8 caracteres' };
+  if (nuevaPassword.length > 128) return { ok: false, error: 'La contraseña no puede superar 128 caracteres' };
+  const hash = bcrypt.hashSync(nuevaPassword, 12);
+  const run = db.transaction(() => {
+    db.prepare('UPDATE usuarios SET password = ? WHERE id = ?').run(hash, usuarioId);
+    // Cierra todas las sesiones: obliga a iniciar sesión de nuevo en todos los dispositivos
+    db.prepare('DELETE FROM sesiones WHERE usuario_id = ?').run(usuarioId);
+    // Invalida cualquier otro token de reset pendiente
+    db.prepare(`UPDATE password_resets SET usado_en = datetime('now') WHERE usuario_id = ? AND usado_en IS NULL`).run(usuarioId);
+  });
+  run();
+  return { ok: true };
+}
+
+/**
+ * Cambia la contraseña conservando SOLO la sesión indicada (p. ej. la
+ * sesión activa del perfil). El resto de sesiones se cierran.
+ */
+export function cambiarPasswordMantenerSesion(usuarioId: number, nuevaPassword: string, tokenAConservar: string): { ok: boolean; error?: string } {
+  if (nuevaPassword.length < 8) return { ok: false, error: 'La contraseña debe tener al menos 8 caracteres' };
+  if (nuevaPassword.length > 128) return { ok: false, error: 'La contraseña no puede superar 128 caracteres' };
+  const hash = bcrypt.hashSync(nuevaPassword, 12);
+  const run = db.transaction(() => {
+    db.prepare('UPDATE usuarios SET password = ? WHERE id = ?').run(hash, usuarioId);
+    // Cierra las demás sesiones, pero mantiene la actual con su caducidad
+    db.prepare('DELETE FROM sesiones WHERE usuario_id = ? AND token != ?').run(usuarioId, tokenAConservar);
+    db.prepare(`UPDATE password_resets SET usado_en = datetime('now') WHERE usuario_id = ? AND usado_en IS NULL`).run(usuarioId);
+  });
+  run();
+  return { ok: true };
+}
+
+/** Verifica la contraseña actual de un usuario (para cambiarla desde el perfil). */
+export function verificarPasswordActual(usuarioId: number, password: string): boolean {
+  const u = db.prepare('SELECT password FROM usuarios WHERE id = ?').get(usuarioId) as { password: string } | undefined;
+  if (!u) return false;
+  return bcrypt.compareSync(password, u.password);
 }

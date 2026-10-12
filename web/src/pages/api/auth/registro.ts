@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { registrarUsuario, crearSesion, COOKIE_NAME, estaBloqueadoLogin, registrarFalloLogin } from '../../../lib/auth';
+import { addNotificacionUsuario } from '../../../lib/notificaciones';
 
 export const POST: APIRoute = async ({ request, cookies, redirect, clientAddress }) => {
   const form = await request.formData();
@@ -23,5 +24,14 @@ export const POST: APIRoute = async ({ request, cookies, redirect, clientAddress
   }
   const token = crearSesion(r.id!);
   cookies.set(COOKIE_NAME, token, { httpOnly: true, sameSite: 'lax', secure: import.meta.env.PROD, path: '/', maxAge: 60 * 60 * 24 * 7 });
+  // Notificación de bienvenida real para el nuevo cliente
+  addNotificacionUsuario({
+    usuario_id: r.id!,
+    tipo: 'bienvenida',
+    titulo: '¡Bienvenida a Chollo & Glam!',
+    mensaje: 'Gracias por unirte. Explora nuestras colecciones de joyería artesanal peruana.',
+    enlace: '/novedades',
+    dedup_key: `bienvenida:${r.id}`,
+  });
   return redirect(next.startsWith('/') && !next.startsWith('/admin') ? next : '/');
 };

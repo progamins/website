@@ -1,4 +1,4 @@
-﻿import type { APIRoute } from 'astro';
+import type { APIRoute } from 'astro';
 import { db } from '../../../lib/db';
 
 export const POST: APIRoute = async ({ request, locals, redirect }) => {
@@ -6,5 +6,5 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   if (!user || user.rol === 'cliente') return redirect('/login');
   const form = await request.formData();
   db.prepare('DELETE FROM categorias WHERE id = ?').run(Number(form.get('id')));
-  return redirect('/admin/categoriasok=Categoría+eliminada');
+  return redirect('/admin/categorias?ok=Categoría+eliminada');
 };

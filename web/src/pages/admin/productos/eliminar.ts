@@ -1,4 +1,4 @@
-﻿import type { APIRoute } from 'astro';
+import type { APIRoute } from 'astro';
 import { db } from '../../../lib/db';
 
 export const POST: APIRoute = async ({ request, locals, redirect }) => {
@@ -7,5 +7,5 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   const form = await request.formData();
   const id = Number(form.get('id'));
   db.prepare('DELETE FROM productos WHERE id = ?').run(id);
-  return redirect('/admin/productosok=Producto+eliminado');
+  return redirect('/admin/productos?ok=Producto+eliminado');
 };

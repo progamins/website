@@ -1,4 +1,4 @@
-﻿import type { APIRoute } from 'astro';
+import type { APIRoute } from 'astro';
 import { db, recalcularValoracion, addNotificacion } from '../../../lib/db';
 
 export const POST: APIRoute = async ({ request, locals, redirect }) => {
@@ -12,5 +12,5 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
     recalcularValoracion(v.producto_id);
     addNotificacion('info', 'Valoración aprobada', '/admin/moderacion');
   }
-  return redirect('/admin/moderacionok=Valoración+aprobada');
+  return redirect('/admin/moderacion?ok=Valoración+aprobada');
 };

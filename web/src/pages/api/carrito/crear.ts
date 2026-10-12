@@ -1,6 +1,7 @@
 ﻿import type { APIRoute } from 'astro';
-import { db, addNotificacion } from '../../../lib/db';
+import { db, addNotificacion, MONEDA } from '../../../lib/db';
 import { registrarPago, type Gateway } from '../../../lib/pagos';
+import { addNotificacionUsuario } from '../../../lib/notificaciones';
 
 export const POST: APIRoute = async ({ request, locals, redirect }) => {
   const user = locals.user;
@@ -23,8 +24,8 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   }
 
   const insertPed = db.prepare(`INSERT INTO pedidos
-    (usuario_id, referencia, total, estado, nombre_envio, direccion_envio, ciudad_envio, codigo_postal, telefono_envio, notas, metodo_pago)
-    VALUES (?,?,?,'pendiente',?,?,?,?,?,?,?)`);
+    (usuario_id, referencia, total, moneda, estado, nombre_envio, direccion_envio, ciudad_envio, codigo_postal, telefono_envio, notas, metodo_pago)
+    VALUES (?,?,?,?,'pendiente',?,?,?,?,?,?,?)`);
   const insertDet = db.prepare('INSERT INTO pedido_detalles (pedido_id, producto_id, cantidad, precio_unitario, subtotal) VALUES (?,?,?,?,?)');
   const updStock = db.prepare('UPDATE productos SET stock = stock - ? WHERE id = ?');
 
@@ -41,7 +42,7 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
     }
     if (!compras.length) throw new Error('No hay productos válidos');
     const referencia = 'PED-' + Date.now().toString().slice(-8);
-    const res = insertPed.run(user.id, referencia, Math.round(total * 100) / 100,
+    const res = insertPed.run(user.id, referencia, Math.round(total * 100) / 100, MONEDA,
       shipping.nombre_envio, shipping.direccion_envio, shipping.ciudad_envio, shipping.codigo_postal,
       shipping.telefono_envio, shipping.notas, shipping.metodo_pago);
     const pedidoId = Number(res.lastInsertRowid);
@@ -58,16 +59,27 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
 
   try {
     const r = crear();
+    // Registra el pago como PENDIENTE: se confirma desde el panel (o un
+    // gateway real en el futuro). No se simula una transacción ni se
+    // guardan datos de tarjeta que no existieron.
     const gateway = (['tarjeta', 'paypal', 'transferencia'].includes(shipping.metodo_pago) ? shipping.metodo_pago : 'manual') as Gateway;
     registrarPago({
       pedido_id: r.pedidoId,
       gateway,
       monto: Math.round(r.total * 100) / 100,
-      tarjeta_ultimos4: gateway === 'tarjeta' ? '4242' : undefined,
-      transaccion_externa: gateway !== 'transferencia' && gateway !== 'manual' ? 'TXN-SIM-' + r.referencia : undefined,
       notas: 'Pago registrado desde el checkout',
     });
     addNotificacion('pedido', `Nuevo pedido ${r.referencia} por S/ ${r.total.toFixed(2)} (${shipping.metodo_pago})`, '/admin/pedidos');
+    // Notificación real al cliente: su pedido quedó registrado
+    addNotificacionUsuario({
+      usuario_id: user.id,
+      tipo: 'pedido_creado',
+      titulo: `Pedido ${r.referencia} confirmado`,
+      mensaje: `Hemos recibido tu pedido por S/ ${r.total.toFixed(2)}. Puedes seguir su estado desde tu cuenta.`,
+      enlace: '/cuenta#pedidos',
+      pedido_id: r.pedidoId,
+      dedup_key: `pedido:creado:${r.referencia}`,
+    });
     return new Response(JSON.stringify({ ok: true, referencia: r.referencia, total: r.total }), { headers: { 'Content-Type': 'application/json' } });
   } catch (e: any) {
     return new Response(JSON.stringify({ ok: false, error: e.message }), { status: 400 });

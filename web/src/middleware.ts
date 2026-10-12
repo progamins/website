@@ -46,7 +46,7 @@ async function manejarAuth(context: any, path: string, next: () => Promise<Respo
   context.locals.user = getUsuarioPorToken(token);
 
   const user = context.locals.user;
-  if ((path.startsWith('/cuenta') || path.startsWith('/favoritos') || path.startsWith('/checkout')) && !user) {
+  if ((path.startsWith('/cuenta') || path.startsWith('/favoritos') || path.startsWith('/checkout') || path.startsWith('/notificaciones')) && !user) {
     return context.redirect('/login?next=' + encodeURIComponent(path));
   }
 

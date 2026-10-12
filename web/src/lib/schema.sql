@@ -205,6 +205,36 @@ CREATE TABLE IF NOT EXISTS configuracion (
   actualizado_en TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+-- Notificaciones del cliente (una por usuario y evento, con deduplicación)
+-- Se crea también por migración v1 en lib/migrations.ts
+CREATE TABLE IF NOT EXISTS notificaciones_usuario (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  usuario_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  tipo TEXT NOT NULL DEFAULT 'pedido',
+  titulo TEXT NOT NULL,
+  mensaje TEXT NOT NULL,
+  enlace TEXT,
+  pedido_id INTEGER REFERENCES pedidos(id) ON DELETE SET NULL,
+  dedup_key TEXT,
+  leida INTEGER NOT NULL DEFAULT 0,
+  leido_en TEXT,
+  creado_en TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_notif_usuario ON notificaciones_usuario(usuario_id, leida);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_notif_dedup ON notificaciones_usuario(dedup_key) WHERE dedup_key IS NOT NULL;
+
+-- Tokens de recuperación de contraseña (hash SHA-256, un solo uso, 1 h)
+-- Se crea también por migración v2 en lib/migrations.ts
+CREATE TABLE IF NOT EXISTS password_resets (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  usuario_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  token_hash TEXT NOT NULL UNIQUE,
+  expira_en TEXT NOT NULL,
+  usado_en TEXT,
+  creado_en TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_presets_usuario ON password_resets(usuario_id);
+
 CREATE TABLE IF NOT EXISTS mensajes (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   nombre TEXT NOT NULL,

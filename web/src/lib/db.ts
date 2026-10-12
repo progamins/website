@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3';
 import fs from 'node:fs';
 import path from 'node:path';
+import { aplicarMigraciones } from './migrations';
 
 /**
  * Resuelve la ruta de la BD según el entorno:
@@ -39,6 +40,8 @@ function getDb(): Database.Database {
     } catch (e) {
       console.error('[db] pragmas omitidos (BD de solo lectura):', e instanceof Error ? e.message : e);
     }
+    // Migraciones versionadas (idempotentes): notificaciones de cliente, reset de contraseña…
+    aplicarMigraciones(_db);
   }
   return _db;
 }

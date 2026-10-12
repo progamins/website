@@ -1,0 +1,73 @@
+---
+import Layout from '../../components/Layout.astro';
+export const prerender = false;
+const user = Astro.locals.user;
+if (user) return Astro.redirect('/cuenta');
+const { token } = Astro.params;
+// Validación server-side al renderizar: el token debe tener formato y
+// vigilar que exista sin marcarlo como consumido (eso ocurre al enviar).
+const tokenValido = token && /^[a-f0-9]{64}$/.test(token);
+if (!tokenValido) return Astro.redirect('/recuperar?error=' + encodeURIComponent('El enlace de recuperación no es válido. Solicita uno nuevo.'));
+---
+<Layout title="Nueva contraseña · Chollo & Glam">
+  <section class="mx-auto flex min-h-[60vh] max-w-md flex-col justify-center px-4 py-16 sm:px-6">
+    <div class="text-center">
+      <p class="flex items-center justify-center gap-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-gold-dark"><span class="h-px w-8 bg-gold/60" aria-hidden="true"></span>Recuperar acceso<span class="h-px w-8 bg-gold/60" aria-hidden="true"></span></p>
+      <h1 class="mt-3 font-display text-4xl text-ink">Crear nueva contraseña</h1>
+      <p class="mt-2 text-sm text-ink-soft">Elige una contraseña de al menos 8 caracteres. Al guardarla se cerrarán todas tus sesiones activas.</p>
+    </div>
+
+    <form action="/api/auth/recuperar/cambiar" method="post" class="mt-8 space-y-4" data-auth-form>
+      <input type="hidden" name="token" value={token} />
+      <div>
+        <label for="np-pass" class="mb-1.5 block text-sm font-medium text-ink">Nueva contraseña</label>
+        <div class="relative">
+          <input id="np-pass" name="password" type="password" required minlength="8" maxlength="128" autocomplete="new-password"
+            placeholder="Mínimo 8 caracteres" class="w-full rounded-xl border border-sand-2 bg-surface px-4 py-3 pr-12 text-ink placeholder-ink-soft/50 outline-none transition focus:border-gold" />
+          <button type="button" data-toggle-pass class="absolute right-3 top-1/2 -translate-y-1/2 text-ink-soft/60 transition hover:text-ink" aria-label="Mostrar contraseña" aria-pressed="false">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.5 12S5.5 5.5 12 5.5 21.5 12 21.5 12 18.5 18.5 12 18.5 2.5 12 2.5 12z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div>
+        <label for="np-pass2" class="mb-1.5 block text-sm font-medium text-ink">Confirmar contraseña</label>
+        <input id="np-pass2" name="password2" type="password" required minlength="8" maxlength="128" autocomplete="new-password"
+          placeholder="Repite la contraseña" class="w-full rounded-xl border border-sand-2 bg-surface px-4 py-3 text-ink placeholder-ink-soft/50 outline-none transition focus:border-gold" />
+      </div>
+      <p data-match-msg class="hidden text-sm text-bronce" role="alert"></p>
+      <button class="w-full rounded-full bg-ink-2 px-6 py-3 font-semibold text-cream transition hover:bg-vino-dark disabled:cursor-not-allowed disabled:opacity-60" data-submit>Guardar contraseña</button>
+    </form>
+
+    <p class="mt-6 text-center text-sm text-ink-soft/70">¿No solicitaste esto? <a href="/recuperar" class="font-medium text-gold hover:text-gold-dark">Solicita otro enlace</a></p>
+  </section>
+</Layout>
+
+<script>
+  // Mostrar/ocultar contraseña
+  document.querySelectorAll<HTMLButtonElement>('[data-toggle-pass]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const input = btn.parentElement?.querySelector('input') as HTMLInputElement | null;
+      if (!input) return;
+      const mostrar = input.type === 'password';
+      input.type = mostrar ? 'text' : 'password';
+      btn.setAttribute('aria-pressed', String(mostrar));
+      btn.setAttribute('aria-label', mostrar ? 'Ocultar contraseña' : 'Mostrar contraseña');
+    });
+  });
+
+  // Validación de coincidencia + estado de carga
+  document.querySelectorAll<HTMLFormElement>('form[data-auth-form]').forEach((form) => {
+    form.addEventListener('submit', (e) => {
+      const pass = (form.querySelector('[name=password]') as HTMLInputElement).value;
+      const pass2 = (form.querySelector('[name=password2]') as HTMLInputElement).value;
+      const msg = form.querySelector('[data-match-msg]') as HTMLElement | null;
+      if (pass !== pass2) {
+        e.preventDefault();
+        if (msg) { msg.textContent = 'Las contraseñas no coinciden.'; msg.classList.remove('hidden'); }
+        return;
+      }
+      const btn = form.querySelector('[data-submit]') as HTMLButtonElement | null;
+      if (btn) { btn.disabled = true; btn.textContent = 'Guardando…'; }
+    });
+  });
+</script>

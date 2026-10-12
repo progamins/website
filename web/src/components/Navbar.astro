@@ -1,10 +1,12 @@
 ---
 import type { Usuario } from '../lib/db';
 import { getLogo, getCategorias } from '../lib/db';
+import { countNotificacionesNoLeidasUsuario } from '../lib/notificaciones';
 const user = Astro.locals.user as Usuario | null;
 const logo = getLogo();
 const categorias = getCategorias();
 const path = Astro.url.pathname;
+const noLeidas = user ? countNotificacionesNoLeidasUsuario(user.id) : 0;
 const links = [
   { href: '/', label: 'Inicio' },
   { href: '/novedades', label: 'Novedades' },
@@ -14,6 +16,7 @@ const links = [
 const isAdmin = user && user.rol !== 'cliente';
 const navLinkCls = (href: string) => path === href ? 'text-gold-dark after:w-full' : 'text-ink-soft hover:text-ink after:w-0 hover:after:w-full';
 const mobileLinkCls = (href: string) => path === href ? 'text-gold-dark' : 'text-ink-soft';
+const inicial = user ? (user.nombre || user.email || '?').charAt(0).toUpperCase() : '';
 ---
 <header class="sticky top-0 z-50 border-b border-sand-2 bg-cream/95 backdrop-blur">
   <!-- Barra de anuncios: promoción verificada + identidad de marca -->
@@ -53,7 +56,7 @@ const mobileLinkCls = (href: string) => path === href ? 'text-gold-dark' : 'text
       {isAdmin && <a href="/admin" class="rounded-full bg-ink-2 px-3.5 py-1.5 text-xs font-semibold text-cream transition hover:bg-vino-dark">Panel</a>}
     </nav>
 
-    <div class="flex items-center gap-1 sm:gap-2">
+    <div class="flex items-center gap-1 sm:gap-1.5">
       <!-- Buscador escritorio -->
       <form action="/buscar" method="get" role="search" class="hidden items-center gap-2 rounded-full border border-sand-2 bg-surface px-3.5 py-1.5 transition focus-within:border-gold focus-within:ring-1 focus-within:ring-gold/40 lg:flex">
         <svg class="h-4 w-4 shrink-0 text-ink-soft/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -69,18 +72,41 @@ const mobileLinkCls = (href: string) => path === href ? 'text-gold-dark' : 'text
         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M20.8 4.6a5.5 5.5 0 00-7.7 0L12 5.7l-1.1-1.1a5.5 5.5 0 00-7.7 7.7l8.8 8.8 8.8-8.8a5.5 5.5 0 000-7.7z"/></svg>
       </a>
 
+      {user && (
+        <div class="relative" data-notif-menu>
+          <button type="button" data-notif-btn aria-expanded="false" aria-controls="notifpanel" aria-label={`Notificaciones${noLeidas > 0 ? ` (${noLeidas} sin leer)` : ''}`}
+            class="relative flex h-9 w-9 items-center justify-center rounded-full text-ink-soft transition hover:bg-sand hover:text-ink">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17H9m12 0l-1.1-1.1a2 2 0 01-.6-1.4V11a6 6 0 10-12 0v3.5a2 2 0 01-.6 1.4L4 17h16zM10 21a2 2 0 004 0"/></svg>
+            <span class:list={["absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-bronce px-1 text-[9px] font-bold text-white transition", noLeidas === 0 && "hidden"]} data-notif-count>{noLeidas}</span>
+          </button>
+        </div>
+      )}
+
       <a href="/carrito" class="relative flex h-9 w-9 items-center justify-center rounded-full text-ink-soft transition hover:bg-sand hover:text-gold-dark" aria-label="Carrito de compras">
         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 5h13"/></svg>
         <span class="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-ink-2 text-[10px] font-bold text-cream" data-cart-count>0</span>
       </a>
 
       {user ? (
-        <a href="/cuenta" class="flex items-center gap-2 rounded-full px-2 py-1.5 text-ink-soft transition hover:bg-sand hover:text-ink" aria-label={`Mi cuenta: ${user.nombre}`}>
-          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-          <span class="hidden text-sm font-medium lg:inline">{user.nombre.split(' ')[0]}</span>
-        </a>
+        <div class="relative" data-account-menu>
+          <button type="button" data-account-btn aria-expanded="false" aria-controls="accountmenu"
+            class="flex items-center gap-2 rounded-full py-1 pl-1 pr-1 transition hover:bg-sand sm:pr-2.5" aria-label={`Mi cuenta: ${user.nombre}`}>
+            <span class="flex h-8 w-8 items-center justify-center rounded-full bg-ink-2 font-display text-sm font-semibold text-gold-light">{inicial}</span>
+            <span class="hidden max-w-24 truncate text-sm font-medium text-ink lg:inline">{user.nombre.split(' ')[0]}</span>
+            <svg class="hidden h-3 w-3 text-ink-soft/60 lg:inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+          </button>
+        </div>
       ) : (
-        <a href="/login" class="hidden rounded-full border border-ink-2 px-4 py-1.5 text-sm font-semibold text-ink-2 transition hover:bg-ink-2 hover:text-cream sm:inline-block">Entrar</a>
+        <a href="/login" class="flex h-9 w-9 items-center justify-center rounded-full text-ink-soft transition hover:bg-sand hover:text-ink sm:hidden" aria-label="Iniciar sesión">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+        </a>
+      )}
+
+      {!user && (
+        <div class="hidden items-center gap-2 sm:flex">
+          <a href="/login" class="rounded-full border border-ink-2 px-3.5 py-1.5 text-sm font-semibold text-ink-2 transition hover:bg-ink-2 hover:text-cream">Iniciar sesión</a>
+          <a href="/registro" class="hidden rounded-full bg-ink-2 px-3.5 py-1.5 text-sm font-semibold text-cream transition hover:bg-vino-dark md:inline-block">Crear cuenta</a>
+        </div>
       )}
 
       <button type="button" data-catbtn-m class="flex h-9 w-9 items-center justify-center rounded-full text-ink-soft transition hover:bg-sand hover:text-ink md:hidden" aria-expanded="false" aria-controls="catpanel" aria-label="Ver categorías">
@@ -96,6 +122,58 @@ const mobileLinkCls = (href: string) => path === href ? 'text-gold-dark' : 'text
       <input name="q" placeholder="Buscar joyas y accesorios…" aria-label="Buscar productos" class="w-full bg-transparent text-sm text-ink placeholder-ink-soft/50 outline-none" />
     </form>
   </div>
+
+  <!-- Panel de notificaciones (usuario autenticado) -->
+  {user && (
+    <div id="notifpanel" data-notif-panel class="absolute inset-x-0 top-full hidden border-t border-sand-2 bg-surface shadow-xl shadow-ink/10">
+      <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6">
+        <div class="flex items-center justify-between">
+          <h2 class="font-display text-lg text-ink">Notificaciones</h2>
+          <div class="flex items-center gap-3">
+            <button type="button" data-notif-readall class="text-xs font-semibold text-gold-dark transition hover:text-ink">Marcar todas como leídas</button>
+            <a href="/notificaciones" class="text-xs font-semibold text-ink-soft transition hover:text-gold-dark">Ver todas</a>
+          </div>
+        </div>
+        <div data-notif-list class="mt-3 divide-y divide-sand-2" role="feed" aria-label="Lista de notificaciones">
+          <p class="py-8 text-center text-sm text-ink-soft/60" data-notif-loading>Cargando…</p>
+        </div>
+      </div>
+    </div>
+  )}
+
+  <!-- Menú de cuenta desplegable -->
+  {user && (
+    <div id="accountmenu" data-account-panel class="absolute right-2 top-full hidden w-60 overflow-hidden rounded-2xl border border-sand-2 bg-surface shadow-xl shadow-ink/10">
+      <div class="border-b border-sand-2 bg-sand/50 px-4 py-3">
+        <p class="truncate text-sm font-semibold text-ink">{user.nombre} {user.apellidos}</p>
+        <p class="truncate text-xs text-ink-soft">{user.email}</p>
+      </div>
+      <nav class="p-1.5" aria-label="Menú de cuenta">
+        <a href="/cuenta" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-ink-soft transition hover:bg-sand hover:text-ink">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+          Mi perfil
+        </a>
+        <a href="/cuenta#pedidos" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-ink-soft transition hover:bg-sand hover:text-ink">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h18l-1 17-8 2-8-2L3 3z"/></svg>
+          Mis pedidos
+        </a>
+        <a href="/favoritos" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-ink-soft transition hover:bg-sand hover:text-ink">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M20.8 4.6a5.5 5.5 0 00-7.7 0L12 5.7l-1.1-1.1a5.5 5.5 0 00-7.7 7.7l8.8 8.8 8.8-8.8a5.5 5.5 0 000-7.7z"/></svg>
+          Favoritos
+        </a>
+        <a href="/notificaciones" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-ink-soft transition hover:bg-sand hover:text-ink">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17H9m12 0l-1.1-1.1a2 2 0 01-.6-1.4V11a6 6 0 10-12 0v3.5a2 2 0 01-.6 1.4L4 17h16zM10 21a2 2 0 004 0"/></svg>
+          Notificaciones
+        </a>
+        <form action="/api/auth/logout" method="post" class="border-t border-sand-2 pt-1.5">
+          <button type="submit" class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-bronce transition hover:bg-bronce/10">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h5a2 2 0 012 2v1"/></svg>
+            Cerrar sesión
+          </button>
+        </form>
+      </nav>
+    </div>
+  )}
 
   <!-- Panel de categorías -->
   <div id="catpanel" data-catpanel class="absolute inset-x-0 top-full hidden border-t border-sand-2 bg-surface shadow-xl shadow-ink/10">
@@ -119,29 +197,45 @@ const mobileLinkCls = (href: string) => path === href ? 'text-gold-dark' : 'text
     {links.map((l) => (
       <a href={l.href} class:list={["text-xs font-medium", mobileLinkCls(l.href)]}>{l.label}</a>
     ))}
+    {user && <a href="/notificaciones" class:list={["text-xs font-medium", mobileLinkCls('/notificaciones')]}>Avisos</a>}
   </nav>
 </header>
 
 <script>
-  const panel = document.querySelector('[data-catpanel]');
-  const menus = document.querySelectorAll('[data-catmenu]');
-  const btn = document.querySelector('[data-catbtn]');
-  const btnM = document.querySelector('[data-catbtn-m]');
-  let closeTimer: ReturnType<typeof setTimeout> | undefined;
+  // ===== Utilidades de menús desplegables accesibles =====
+  function setupPanel(btnSel: string, panelSel: string) {
+    const btn = document.querySelector(btnSel);
+    const panel = document.querySelector(panelSel);
+    if (!btn || !panel) return;
+    const abrir = () => { panel.classList.remove('hidden'); btn.setAttribute('aria-expanded', 'true'); };
+    const cerrar = () => { panel.classList.add('hidden'); btn.setAttribute('aria-expanded', 'false'); };
+    const abierto = () => !panel.classList.contains('hidden');
+    btn.addEventListener('click', (e) => { e.stopPropagation(); abierto() ? cerrar() : abrir(); });
+    document.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement;
+      if (abierto() && !t.closest(panelSel) && !t.closest(btnSel)) cerrar();
+    });
+    return { cerrar };
+  }
+  const catCtl = setupPanel('[data-catbtn]', '[data-catpanel]');
+  setupPanel('[data-catbtn-m]', '[data-catpanel]');
+  const notifCtl = setupPanel('[data-notif-btn]', '[data-notif-panel]');
+  const accountCtl = setupPanel('[data-account-btn]', '[data-account-panel]');
 
-  const setExpanded = (open: boolean) => {
-    [btn, btnM].forEach((b) => b?.setAttribute('aria-expanded', String(open)));
-  };
-  const open = () => { if (closeTimer) clearTimeout(closeTimer); panel?.classList.remove('hidden'); setExpanded(true); };
-  const closeNow = () => { if (closeTimer) clearTimeout(closeTimer); panel?.classList.add('hidden'); setExpanded(false); };
-  const closeSoon = () => { if (closeTimer) clearTimeout(closeTimer); closeTimer = setTimeout(closeNow, 180); };
-  const isOpen = () => panel && !panel.classList.contains('hidden');
+  // Escape cierra todos los paneles
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    catCtl?.cerrar(); notifCtl?.cerrar(); accountCtl?.cerrar(); closeSearch();
+  });
 
-  btn?.addEventListener('click', (e) => { e.stopPropagation(); isOpen() ? closeNow() : open(); });
-  btnM?.addEventListener('click', (e) => { e.stopPropagation(); isOpen() ? closeNow() : open(); });
-
-  // Abrir con hover (solo escritorio), cerrando con un pequeño retardo para cruzar el hueco
+  // Categorías: abrir con hover en escritorio
   if (window.matchMedia('(min-width: 768px)').matches) {
+    const menus = document.querySelectorAll('[data-catmenu]');
+    const panel = document.querySelector('[data-catpanel]');
+    let closeTimer: ReturnType<typeof setTimeout> | undefined;
+    const open = () => { if (closeTimer) clearTimeout(closeTimer); panel?.classList.remove('hidden'); };
+    const closeNow = () => { if (closeTimer) clearTimeout(closeTimer); panel?.classList.add('hidden'); };
+    const closeSoon = () => { if (closeTimer) clearTimeout(closeTimer); closeTimer = setTimeout(closeNow, 180); };
     menus.forEach((m) => {
       m.addEventListener('mouseenter', open);
       m.addEventListener('mouseleave', closeSoon);
@@ -150,26 +244,16 @@ const mobileLinkCls = (href: string) => path === href ? 'text-gold-dark' : 'text
     panel?.addEventListener('mouseleave', closeSoon);
   }
 
-  document.addEventListener('click', (e) => {
-    const t = e.target as HTMLElement;
-    if (!t.closest('[data-catpanel]') && !t.closest('[data-catbtn]') && !t.closest('[data-catbtn-m]')) closeNow();
-  });
-
-  // Cerrar con Escape (accesibilidad por teclado)
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') { closeNow(); closeSearch(); }
-  });
-
-  // Buscador móvil
+  // ===== Buscador móvil =====
   const searchToggle = document.querySelector('[data-search-toggle]');
   const searchPanel = document.querySelector('[data-search-panel]');
-  const closeSearch = () => {
+  function closeSearch() {
     searchPanel?.classList.add('hidden');
     searchToggle?.setAttribute('aria-expanded', 'false');
-  };
+  }
   searchToggle?.addEventListener('click', () => {
-    const openSearch = searchPanel?.classList.contains('hidden') ?? false;
-    if (openSearch) {
+    const abrir = searchPanel?.classList.contains('hidden') ?? false;
+    if (abrir) {
       searchPanel?.classList.remove('hidden');
       searchToggle.setAttribute('aria-expanded', 'true');
       searchPanel?.querySelector('input')?.focus();
@@ -178,7 +262,101 @@ const mobileLinkCls = (href: string) => path === href ? 'text-gold-dark' : 'text
     }
   });
 
-  // Sincronizar contador de carrito
+  // ===== Centro de notificaciones =====
+  const notifList = document.querySelector('[data-notif-list]');
+  const notifCount = document.querySelector('[data-notif-count]');
+
+  const sincronizarContador = async () => {
+    try {
+      const res = await fetch('/api/notificaciones/mias?limit=1', { headers: { 'Cache-Control': 'no-store' } });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (notifCount) {
+        notifCount.textContent = String(data.noLeidas ?? 0);
+        notifCount.classList.toggle('hidden', !data.noLeidas);
+      }
+    } catch { /* silencioso: es una mejora progresiva */ }
+  };
+
+  const formatearFecha = (iso: string) => {
+    try {
+      return new Date(iso.replace(' ', 'T') + (iso.includes('Z') ? '' : 'Z')).toLocaleDateString('es-PE', { day: 'numeric', month: 'short' });
+    } catch { return ''; }
+  };
+
+  const renderNotificaciones = (items: any[], loading: boolean) => {
+    if (!notifList) return;
+    if (loading) {
+      notifList.innerHTML = '<p class="py-8 text-center text-sm text-ink-soft/60" data-notif-loading>Cargando…</p>';
+      return;
+    }
+    if (!items.length) {
+      notifList.innerHTML = `
+        <div class="flex flex-col items-center gap-2 py-10 text-center">
+          <svg class="h-8 w-8 text-ink-soft/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.4"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17H9m12 0l-1.1-1.1a2 2 0 01-.6-1.4V11a6 6 0 10-12 0v3.5a2 2 0 01-.6 1.4L4 17h16zM10 21a2 2 0 004 0"/></svg>
+          <p class="text-sm text-ink-soft/70">No tienes notificaciones todavía.</p>
+          <p class="text-xs text-ink-soft/50">Aquí verás el estado de tus pedidos y avisos de seguridad.</p>
+        </div>`;
+      return;
+    }
+    notifList.innerHTML = items.map((n: any) => `
+      <a href="${n.enlace || '/notificaciones'}" data-notif-item="${n.id}" class="flex items-start gap-3 px-2 py-3 transition hover:bg-sand/60 ${n.leida ? 'opacity-60' : ''}">
+        <span class="mt-1 flex h-2 w-2 shrink-0 rounded-full ${n.leida ? 'bg-ink-soft/30' : 'bg-gold'}" aria-hidden="true"></span>
+        <span class="min-w-0 flex-1">
+          <span class="block truncate text-sm font-semibold ${n.leida ? 'text-ink-soft' : 'text-ink'}">${n.titulo}</span>
+          <span class="mt-0.5 block line-clamp-2 text-xs leading-relaxed text-ink-soft">${n.mensaje}</span>
+        </span>
+        <span class="shrink-0 text-[11px] text-ink-soft/60">${formatearFecha(n.creado_en)}</span>
+      </a>`).join('');
+  };
+
+  const cargarNotificaciones = async () => {
+    if (!notifList) return;
+    renderNotificaciones([], true);
+    try {
+      const res = await fetch('/api/notificaciones/mias?limit=10', { headers: { 'Cache-Control': 'no-store' } });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      renderNotificaciones(data.items ?? [], false);
+      if (notifCount) {
+        notifCount.textContent = String(data.noLeidas ?? 0);
+        notifCount.classList.toggle('hidden', !data.noLeidas);
+      }
+    } catch {
+      if (notifList) notifList.innerHTML = '<p class="py-8 text-center text-sm text-bronce">No se pudieron cargar las notificaciones. Inténtalo más tarde.</p>';
+    }
+  };
+
+  // Al abrir el panel: carga fresca
+  document.querySelector('[data-notif-btn]')?.addEventListener('click', () => {
+    const abierto = !document.querySelector('[data-notif-panel]')?.classList.contains('hidden');
+    if (abierto) cargarNotificaciones();
+  });
+
+  // Marcar todas como leídas
+  document.querySelector('[data-notif-readall]')?.addEventListener('click', async () => {
+    try {
+      await fetch('/api/notificaciones/leer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ todas: true }) });
+      await cargarNotificaciones();
+    } catch { /* el estado se recupera en la próxima apertura */ }
+  });
+
+  // Al seguir una notificación: se marca como leída
+  notifList?.addEventListener('click', (e) => {
+    const item = (e.target as HTMLElement).closest('[data-notif-item]') as HTMLElement | null;
+    if (!item) return;
+    fetch('/api/notificaciones/leer', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: Number(item.dataset.notifItem) }),
+    }).then(sincronizarContador).catch(() => {});
+  });
+
+  // Actualización periódica moderada (60 s) solo para autenticados
+  if (document.querySelector('[data-notif-btn]')) {
+    window.setInterval(sincronizarContador, 60_000);
+  }
+
+  // ===== Contador de carrito =====
   const sync = () => {
     const el = document.querySelector('[data-cart-count]');
     if (!el) return;

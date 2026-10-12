@@ -5,7 +5,6 @@ const ref = Astro.url.searchParams.get('ref') ?? '';
 const total = Astro.url.searchParams.get('total') ?? '';
 const nTotal = total ? Number(total) : 0;
 const fmt = new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format;
-const email = Astro.locals.user?.email;
 ---
 <Layout title="Pedido confirmado · Chollo & Glam">
   <section class="mx-auto flex min-h-[70vh] max-w-2xl flex-col items-center justify-center px-4 py-16 text-center">
@@ -15,13 +14,12 @@ const email = Astro.locals.user?.email;
     <h1 class="mt-6 font-display text-4xl text-ink">¡Gracias por tu compra!</h1>
     <p class="mt-3 text-ink-soft/70">Tu pedido ha sido registrado correctamente.</p>
 
-    <div class="mt-8 w-full max-w-md space-y-3 rounded-2xl border border-ink/10 bg-surface p-6 text-left shadow-sm">
-      <div class="flex justify-between"><span class="text-ink-soft/70">Referencia</span><span class="font-medium text-gold">{ref}</span></div>
-      <div class="flex justify-between"><span class="text-ink-soft/70">Total</span><span class="font-display text-gold">{nTotal ? fmt(nTotal) : '—'}</span></div>
+    <div class="mt-8 w-full max-w-md space-y-3 rounded-2xl border border-sand-2 bg-surface p-6 text-left shadow-sm">
+      <div class="flex justify-between"><span class="text-ink-soft/70">Referencia</span><span class="font-medium text-gold-dark">{ref}</span></div>
+      <div class="flex justify-between"><span class="text-ink-soft/70">Total</span><span class="font-display text-gold-dark">{nTotal ? fmt(nTotal) : '—'}</span></div>
       <div class="flex justify-between"><span class="text-ink-soft/70">Estado</span><span class="text-yellow-700">Pendiente de pago</span></div>
-      {email && <div class="flex justify-between"><span class="text-ink-soft/70">Recibirás el detalle en</span><span class="text-ink">{email}</span></div>}
-      <div class="mt-2 border-t border-ink/10 pt-3 text-sm text-ink-soft/70">
-        Te enviaremos un email con el seguimiento cuando tu pedido sea enviado.
+      <div class="mt-2 border-t border-sand-2 pt-3 text-sm text-ink-soft/70">
+        Seguirás el estado de este pedido desde <a href="/cuenta#pedidos" class="font-medium text-gold-dark hover:text-ink">Mis pedidos</a> y en la campana de notificaciones: te avisaremos cuando se confirme el pago y cuando tu pedido sea enviado.
       </div>
     </div>
 

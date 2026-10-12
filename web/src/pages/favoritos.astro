@@ -6,12 +6,23 @@ const user = Astro.locals.user as Usuario;
 const deseos = db.prepare(`SELECT p.* FROM lista_deseos l JOIN productos p ON p.id = l.producto_id WHERE l.usuario_id = ? ORDER BY l.id DESC`).all(user.id) as any[];
 ---
 <Layout title="Favoritos · Chollo & Glam">
-  <section class="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-    <h1 class="mb-8 font-display text-3xl text-ink">Mis favoritos</h1>
+  <section class="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-16">
+    <div class="mb-10">
+      <p class="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-gold-dark"><span class="h-px w-8 bg-gold/60" aria-hidden="true"></span>Tu selección</p>
+      <h1 class="mt-3 font-display text-4xl text-ink sm:text-5xl">Mis favoritos</h1>
+      <p class="mt-2 text-sm text-ink-soft">Las piezas que has guardado con el corazón.</p>
+    </div>
     {deseos.length === 0 ? (
-      <p class="text-ink-soft/50">No tienes favoritos todavía.</p>
+      <div class="mx-auto max-w-md rounded-2xl border border-dashed border-sand-2 bg-surface p-12 text-center">
+        <span class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-sand text-ink-soft/50">
+          <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20.8 4.6a5.5 5.5 0 00-7.7 0L12 5.7l-1.1-1.1a5.5 5.5 0 00-7.7 7.7l8.8 8.8 8.8-8.8a5.5 5.5 0 000-7.7z"/></svg>
+        </span>
+        <p class="mt-4 font-display text-2xl text-ink">Aún no guardas favoritos</p>
+        <p class="mt-2 text-sm text-ink-soft">Explora el catálogo y pulsa el corazón para guardar tus piezas favoritas aquí.</p>
+        <a href="/novedades" class="mt-6 inline-block rounded-full bg-ink-2 px-6 py-2.5 text-sm font-semibold text-cream transition hover:bg-vino-dark">Descubrir piezas</a>
+      </div>
     ) : (
-      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {deseos.map((p) => <ProductCard producto={p} />)}
       </div>
     )}

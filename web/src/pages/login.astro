@@ -1,24 +1,74 @@
 ---
 import Layout from '../components/Layout.astro';
+export const prerender = false;
 const next = Astro.url.searchParams.get('next') || '/';
 const error = Astro.url.searchParams.get('error');
+const ok = Astro.url.searchParams.get('ok');
 const user = Astro.locals.user;
 if (user) return Astro.redirect('/cuenta');
+const nextSeguro = next.startsWith('/') && !next.startsWith('/admin') ? next : '/';
 ---
 <Layout title="Iniciar sesión · Chollo & Glam">
   <section class="mx-auto flex min-h-[60vh] max-w-md flex-col justify-center px-4 py-16 sm:px-6">
     <div class="text-center">
-      <p class="text-[11px] uppercase tracking-[0.25em] text-gold">Bienvenido de nuevo</p>
-      <h1 class="mt-2 font-display text-4xl text-ink">Iniciar sesión</h1>
-      <p class="mt-2 text-sm text-ink-soft/70">Accede a tu cuenta de Chollo &amp; Glam</p>
+      <p class="flex items-center justify-center gap-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-gold-dark"><span class="h-px w-8 bg-gold/60" aria-hidden="true"></span>Bienvenido de nuevo<span class="h-px w-8 bg-gold/60" aria-hidden="true"></span></p>
+      <h1 class="mt-3 font-display text-4xl text-ink">Iniciar sesión</h1>
+      <p class="mt-2 text-sm text-ink-soft">Accede a tu cuenta de Chollo & Glam</p>
     </div>
-    {error && <p class="mt-4 rounded-xl border border-bronce/40 bg-bronce/10 px-4 py-3 text-sm text-bronce">{error}</p>}
-    <form action="/api/auth/login" method="post" class="mt-8 space-y-4">
-      <input type="hidden" name="next" value={next} />
-      <input name="email" type="email" required placeholder="Email" class="w-full rounded-xl border border-ink/15 bg-surface px-4 py-3 text-ink placeholder-ink-soft/50 outline-none focus:border-gold" />
-      <input name="password" type="password" required placeholder="Contraseña" class="w-full rounded-xl border border-ink/15 bg-surface px-4 py-3 text-ink placeholder-ink-soft/50 outline-none focus:border-gold" />
-      <button class="w-full rounded-full bg-ink-2 px-6 py-3 font-semibold text-cream transition hover:bg-vino-dark">Entrar</button>
+
+    {ok && <p role="status" class="mt-6 rounded-xl border border-ande/30 bg-ande/10 px-4 py-3 text-sm text-ande">{ok}</p>}
+    {error && <p role="alert" class="mt-6 rounded-xl border border-bronce/40 bg-bronce/10 px-4 py-3 text-sm text-bronce">{error}</p>}
+
+    <form action="/api/auth/login" method="post" class="mt-8 space-y-4" data-auth-form>
+      <input type="hidden" name="next" value={nextSeguro} />
+      <div>
+        <label for="login-email" class="mb-1.5 block text-sm font-medium text-ink">Correo electrónico</label>
+        <input id="login-email" name="email" type="email" required maxlength="254" autocomplete="email" placeholder="tu@email.com"
+          class="w-full rounded-xl border border-sand-2 bg-surface px-4 py-3 text-ink placeholder-ink-soft/50 outline-none transition focus:border-gold" />
+      </div>
+      <div>
+        <div class="mb-1.5 flex items-baseline justify-between">
+          <label for="login-pass" class="block text-sm font-medium text-ink">Contraseña</label>
+          <a href="/recuperar" class="text-xs font-medium text-gold-dark transition hover:text-ink">¿Olvidaste tu contraseña?</a>
+        </div>
+        <div class="relative">
+          <input id="login-pass" name="password" type="password" required autocomplete="current-password" placeholder="Tu contraseña"
+            class="w-full rounded-xl border border-sand-2 bg-surface px-4 py-3 pr-12 text-ink placeholder-ink-soft/50 outline-none transition focus:border-gold" />
+          <button type="button" data-toggle-pass aria-label="Mostrar contraseña" aria-pressed="false"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-ink-soft/60 transition hover:text-ink">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.5 12S5.5 5.5 12 5.5 21.5 12 21.5 12 18.5 18.5 12 18.5 2.5 12 2.5 12z"/></svg>
+          </button>
+        </div>
+      </div>
+      <label class="flex cursor-pointer items-center gap-2.5 text-sm text-ink-soft">
+        <input type="checkbox" name="recordar" class="h-4 w-4 rounded border-sand-2 accent-[#4A2029]" />
+        Recordarme en este dispositivo
+      </label>
+      <button class="w-full rounded-full bg-ink-2 px-6 py-3 font-semibold text-cream transition hover:bg-vino-dark disabled:cursor-not-allowed disabled:opacity-60" data-submit>Entrar</button>
     </form>
-    <p class="mt-6 text-center text-sm text-ink-soft/70">¿No tienes cuenta? <a href="/registro" class="font-medium text-gold hover:text-gold-dark">Regístrate</a></p>
+
+    <p class="mt-6 text-center text-sm text-ink-soft/70">¿No tienes cuenta? <a href={`/registro${nextSeguro !== '/' ? `?next=${encodeURIComponent(nextSeguro)}` : ''}`} class="font-medium text-gold hover:text-gold-dark">Regístrate</a></p>
   </section>
 </Layout>
+
+<script>
+  // Mostrar/ocultar contraseña
+  document.querySelectorAll<HTMLButtonElement>('[data-toggle-pass]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const input = btn.parentElement?.querySelector('input') as HTMLInputElement | null;
+      if (!input) return;
+      const mostrar = input.type === 'password';
+      input.type = mostrar ? 'text' : 'password';
+      btn.setAttribute('aria-pressed', String(mostrar));
+      btn.setAttribute('aria-label', mostrar ? 'Ocultar contraseña' : 'Mostrar contraseña');
+    });
+  });
+
+  // Estado de carga al enviar (evita envíos duplicados)
+  document.querySelectorAll<HTMLFormElement>('form[data-auth-form]').forEach((form) => {
+    form.addEventListener('submit', () => {
+      const btn = form.querySelector('[data-submit]') as HTMLButtonElement | null;
+      if (btn) { btn.disabled = true; btn.textContent = 'Iniciando sesión…'; }
+    });
+  });
+</script>

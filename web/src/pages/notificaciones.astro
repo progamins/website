@@ -1,0 +1,106 @@
+---
+import Layout from '../components/Layout.astro';
+import type { Usuario } from '../lib/db';
+import { getNotificacionesUsuario, TIPO_META } from '../lib/notificaciones';
+export const prerender = false;
+const user = Astro.locals.user as Usuario;
+const notificaciones = getNotificacionesUsuario(user.id, 50);
+const sinLeer = notificaciones.filter((n) => !n.leida).length;
+const fecha = (iso: string) => new Date(iso.replace(' ', 'T') + (iso.includes('Z') ? '' : 'Z')).toLocaleString('es-PE', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+---
+<Layout title="Notificaciones · Chollo & Glam">
+  <section class="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-16">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-gold-dark"><span class="h-px w-8 bg-gold/60" aria-hidden="true"></span> tu actividad</p>
+        <h1 class="mt-3 font-display text-4xl text-ink sm:text-5xl">Notificaciones</h1>
+        {sinLeer > 0 && <p class="mt-2 text-sm text-ink-soft">{sinLeer} sin leer</p>}
+      </div>
+      {sinLeer > 0 && (
+        <button type="button" data-marcar-todas class="rounded-full border border-sand-2 px-5 py-2 text-sm font-semibold text-ink-soft transition hover:border-gold hover:text-gold-dark">
+          Marcar todas como leídas
+        </button>
+      )}
+    </div>
+
+    {notificaciones.length === 0 ? (
+      <div class="mt-10 rounded-2xl border border-dashed border-sand-2 bg-surface p-12 text-center">
+        <span class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-sand text-ink-soft/50">
+          <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.4"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17H9m12 0l-1.1-1.1a2 2 0 01-.6-1.4V11a6 6 0 10-12 0v3.5a2 2 0 01-.6 1.4L4 17h16zM10 21a2 2 0 004 0"/></svg>
+        </span>
+        <p class="mt-4 font-display text-2xl text-ink">Todo tranquilo por aquí</p>
+        <p class="mt-2 text-sm text-ink-soft">Cuando realices un pedido, te avisaremos aquí su estado: confirmación, envío y entrega.</p>
+        <a href="/novedades" class="mt-6 inline-block rounded-full bg-ink-2 px-6 py-2.5 text-sm font-semibold text-cream transition hover:bg-vino-dark">Descubrir piezas</a>
+      </div>
+    ) : (
+      <ul class="mt-10 space-y-3" role="feed" aria-label="Historial de notificaciones">
+        {notificaciones.map((n) => (
+          <li>
+            {n.enlace ? (
+              <a href={n.enlace} data-notif-link={n.id} data-no-leida={n.leida ? undefined : '1'} class:list={["flex items-start gap-4 rounded-2xl border p-5 transition hover:-translate-y-0.5 hover:shadow-md hover:shadow-ink/5", n.leida ? "border-sand-2 bg-surface/60" : "border-gold/40 bg-surface shadow-sm"]}>
+                <span class:list={["mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full", n.leida ? "bg-sand text-ink-soft/60" : "bg-gold/10 text-gold-dark"]}>
+                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d={TIPO_META[n.tipo]?.icono ?? TIPO_META.pedido_estado.icono}/></svg>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="flex flex-wrap items-baseline gap-x-2">
+                    <span class:list={["text-sm", n.leida ? "font-medium text-ink-soft" : "font-semibold text-ink"]}>{n.titulo}</span>
+                    <span class="text-[10px] font-semibold uppercase tracking-wider text-gold-dark">{TIPO_META[n.tipo]?.label ?? 'Aviso'}</span>
+                    {!n.leida && <span class="h-2 w-2 rounded-full bg-gold" aria-label="No leída" role="img"></span>}
+                  </span>
+                  <span class="mt-1 block text-sm leading-relaxed text-ink-soft">{n.mensaje}</span>
+                  <span class="mt-1.5 block text-xs text-ink-soft/60">{fecha(n.creado_en)}</span>
+                </span>
+                <svg class="mt-1 h-4 w-4 shrink-0 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+              </a>
+            ) : (
+              <div class:list={["flex items-start gap-4 rounded-2xl border p-5", n.leida ? "border-sand-2 bg-surface/60" : "border-gold/40 bg-surface shadow-sm"]}>
+                <span class:list={["mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full", n.leida ? "bg-sand text-ink-soft/60" : "bg-gold/10 text-gold-dark"]}>
+                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d={TIPO_META[n.tipo]?.icono ?? TIPO_META.pedido_estado.icono}/></svg>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="flex flex-wrap items-baseline gap-x-2">
+                    <span class:list={["text-sm", n.leida ? "font-medium text-ink-soft" : "font-semibold text-ink"]}>{n.titulo}</span>
+                    <span class="text-[10px] font-semibold uppercase tracking-wider text-gold-dark">{TIPO_META[n.tipo]?.label ?? 'Aviso'}</span>
+                    {!n.leida && <span class="h-2 w-2 rounded-full bg-gold" aria-label="No leída" role="img"></span>}
+                  </span>
+                  <span class="mt-1 block text-sm leading-relaxed text-ink-soft">{n.mensaje}</span>
+                  <span class="mt-1.5 block text-xs text-ink-soft/60">{fecha(n.creado_en)}</span>
+                </span>
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
+</Layout>
+
+<script>
+  // Marcar todas como leídas (con confirmación visual honesta)
+  const btnTodas = document.querySelector('[data-marcar-todas]') as HTMLButtonElement | null;
+  btnTodas?.addEventListener('click', async () => {
+    btnTodas.disabled = true;
+    btnTodas.textContent = 'Actualizando…';
+    try {
+      const res = await fetch('/api/notificaciones/leer', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ todas: true }),
+      });
+      if (res.ok) window.location.reload();
+      else throw new Error();
+    } catch {
+      btnTodas.disabled = false;
+      btnTodas.textContent = 'No se pudo actualizar. Inténtalo de nuevo.';
+    }
+  });
+
+  // Al seguir una notificación no leída, se marca como leída
+  document.querySelectorAll('[data-notif-link]').forEach((el) => {
+    el.addEventListener('click', () => {
+      const elm = el as HTMLElement;
+      if (elm.dataset.noLeida !== '1') return;
+      fetch('/api/notificaciones/leer', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: Number(elm.dataset.notifLink) }),
+      }).catch(() => {});
+    });
+  });
+</script>

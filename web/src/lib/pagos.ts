@@ -1,4 +1,22 @@
 import { db, addNotificacion } from './db';
+import { addNotificacionUsuario } from './notificaciones';
+
+/** Notifica al cliente propietario del pedido un evento de pago. */
+function notificarPagoCliente(pedidoId: number, titulo: string, mensaje: string, dedup: string): void {
+  const pedido = db.prepare('SELECT usuario_id, referencia FROM pedidos WHERE id = ?').get(pedidoId) as
+    | { usuario_id: number | null; referencia: string }
+    | undefined;
+  if (!pedido?.usuario_id) return;
+  addNotificacionUsuario({
+    usuario_id: pedido.usuario_id,
+    tipo: 'pago',
+    titulo,
+    mensaje,
+    enlace: '/cuenta#pedidos',
+    pedido_id: pedidoId,
+    dedup_key: `pago:${dedup}:${pedidoId}`,
+  });
+}
 
 export type Gateway = 'tarjeta' | 'paypal' | 'transferencia' | 'manual';
 export type PagoEstado = 'pendiente' | 'aprobado' | 'fallido' | 'reembolsado';
@@ -84,6 +102,7 @@ export function aprobarPago(pagoId: number, transaccionExterna?: string): Pago |
   const p = db.prepare('SELECT * FROM pagos WHERE id = ?').get(pagoId) as Pago;
   const estado = recomputarPagoEstado(pago.pedido_id);
   addNotificacion('pago', `Pago ${p.referencia} aprobado (${p.gateway}). Pedido ${p.pedido_id} → ${estado}`, '/admin/pagos');
+  notificarPagoCliente(p.pedido_id, 'Pago confirmado', 'Hemos confirmado el pago de tu pedido. Prepararemos tu envío a la brevedad.', 'aprobado');
   return p;
 }
 
@@ -94,6 +113,7 @@ export function fallarPago(pagoId: number, notas?: string): Pago | null {
   db.prepare(`UPDATE pagos SET estado='fallido', notas = COALESCE(?, notas) WHERE id=?`).run(notas ?? null, pagoId);
   recomputarPagoEstado(pago.pedido_id);
   addNotificacion('pago', `Pago ${pago.referencia} marcado como fallido`, '/admin/pagos');
+  notificarPagoCliente(pago.pedido_id, 'Problema con el pago', 'No pudimos procesar el pago de tu pedido. Contáctanos para resolverlo.', 'fallido');
   return db.prepare('SELECT * FROM pagos WHERE id = ?').get(pagoId) as Pago;
 }
 
@@ -110,6 +130,7 @@ export function crearReembolso(pedidoId: number, monto: number, notas?: string):
     .run(pedidoId, ref, 'manual', reembolsable, notas ?? null);
   recomputarPagoEstado(pedidoId);
   addNotificacion('pago', `Reembolso ${ref} por S/ ${reembolsable.toFixed(2)} procesado`, '/admin/pagos');
+  notificarPagoCliente(pedidoId, 'Reembolso procesado', `Hemos procesado un reembolso por S/ ${reembolsable.toFixed(2)}.`, 'reembolso');
   return db.prepare('SELECT * FROM pagos WHERE id = ?').get(Number(info.lastInsertRowid)) as Pago;
 }
 

@@ -1,0 +1,62 @@
+---
+import Layout from '../components/Layout.astro';
+import { emailConfigurado } from '../lib/email';
+export const prerender = false;
+const user = Astro.locals.user;
+if (user) return Astro.redirect('/cuenta');
+const error = Astro.url.searchParams.get('error');
+const enviado = Astro.url.searchParams.get('enviado') === '1';
+const emailActivo = emailConfigurado();
+---
+<Layout title="Recuperar contraseña · Chollo & Glam">
+  <section class="mx-auto flex min-h-[60vh] max-w-md flex-col justify-center px-4 py-16 sm:px-6">
+    <div class="text-center">
+      <p class="flex items-center justify-center gap-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-gold-dark"><span class="h-px w-8 bg-gold/60" aria-hidden="true"></span>Recuperar acceso<span class="h-px w-8 bg-gold/60" aria-hidden="true"></span></p>
+      <h1 class="mt-3 font-display text-4xl text-ink">¿Olvidaste tu contraseña?</h1>
+      <p class="mt-2 text-sm text-ink-soft">Te enviaremos un enlace para crear una contraseña nueva.</p>
+    </div>
+
+    {error && <p role="alert" class="mt-6 rounded-xl border border-bronce/40 bg-bronce/10 px-4 py-3 text-sm text-bronce">{error}</p>}
+
+    {enviado ? (
+      <div class="mt-8 rounded-2xl border border-sand-2 bg-surface p-6 text-center shadow-sm">
+        <span class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-ande/10 text-ande">
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.5 5.5a2.4 2.4 0 003 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        </span>
+        {emailActivo ? (
+          <p class="mt-4 text-sm leading-relaxed text-ink-soft">
+            Si existe una cuenta con ese correo, recibirás un enlace para restablecer tu contraseña.
+            El enlace caduca en <strong class="text-ink">1 hora</strong> y solo puede usarse una vez.
+          </p>
+        ) : (
+          <p class="mt-4 text-sm leading-relaxed text-ink-soft">
+            Hemos registrado tu solicitud. En este momento la entrega de correos de la tienda no está
+            activada; cuando se configure, los enlaces llegarán normalmente. Si necesitas acceso urgente,
+            escríbenos a <a href="mailto:clientes@cholloyglam.com" class="font-medium text-gold-dark hover:text-ink">clientes@cholloyglam.com</a>.
+          </p>
+        )}
+        <a href="/login" class="mt-5 inline-block text-sm font-semibold text-gold-dark transition hover:text-ink">← Volver a iniciar sesión</a>
+      </div>
+    ) : (
+      <form action="/api/auth/recuperar" method="post" class="mt-8 space-y-4" data-auth-form>
+        <div>
+          <label for="rec-email" class="mb-1.5 block text-sm font-medium text-ink">Correo electrónico</label>
+          <input id="rec-email" name="email" type="email" required maxlength="254" autocomplete="email"
+            placeholder="tu@email.com" class="w-full rounded-xl border border-sand-2 bg-surface px-4 py-3 text-ink placeholder-ink-soft/50 outline-none transition focus:border-gold" />
+        </div>
+        <button class="w-full rounded-full bg-ink-2 px-6 py-3 font-semibold text-cream transition hover:bg-vino-dark disabled:cursor-not-allowed disabled:opacity-60" data-submit>Enviar enlace</button>
+      </form>
+    )}
+
+    <p class="mt-6 text-center text-sm text-ink-soft/70">¿La recordaste? <a href="/login" class="font-medium text-gold hover:text-gold-dark">Inicia sesión</a></p>
+  </section>
+</Layout>
+
+<script>
+  document.querySelectorAll<HTMLFormElement>('form[data-auth-form]').forEach((form) => {
+    form.addEventListener('submit', () => {
+      const btn = form.querySelector('[data-submit]') as HTMLButtonElement;
+      if (btn) { btn.disabled = true; btn.textContent = 'Enviando…'; }
+    });
+  });
+</script>

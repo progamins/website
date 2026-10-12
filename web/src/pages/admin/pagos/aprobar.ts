@@ -1,4 +1,4 @@
-﻿import type { APIRoute } from 'astro';
+import type { APIRoute } from 'astro';
 import { aprobarPago } from '../../../lib/pagos';
 
 export const POST: APIRoute = async ({ request, locals, redirect }) => {
@@ -7,5 +7,5 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   const form = await request.formData();
   const id = Number(form.get('id'));
   if (id) aprobarPago(id);
-  return redirect('/admin/pagosok=Pago+aprobado');
+  return redirect('/admin/pagos?ok=Pago+aprobado');
 };
