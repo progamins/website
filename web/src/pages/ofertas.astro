@@ -7,9 +7,9 @@ const productos = getOfertas();
 <Layout title="Ofertas · Chollo & Glam">
   <section class="mx-auto max-w-7xl px-4 py-16 sm:px-6">
     <div class="mb-10 text-center">
-      <p class="text-[11px] uppercase tracking-[0.25em] text-gold">Descuentos</p>
-      <h1 class="mt-2 font-display text-4xl text-ink">Ofertas</h1>
-      <p class="mx-auto mt-3 max-w-xl text-ink-soft/70">Piezas seleccionadas con precios rebajados por tiempo limitado.</p>
+      <p class="flex items-center justify-center gap-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-gold-dark"><span class="h-px w-8 bg-gold/60" aria-hidden="true"></span>Descuentos<span class="h-px w-8 bg-gold/60" aria-hidden="true"></span></p>
+      <h1 class="mt-3 font-display text-4xl text-ink sm:text-5xl">Ofertas</h1>
+      <p class="mx-auto mt-3 max-w-xl text-ink-soft">Piezas seleccionadas con precios rebajados por tiempo limitado.</p>
     </div>
     {productos.length === 0 ? (
       <p class="text-center text-ink-soft/50">No hay ofertas disponibles en este momento.</p>

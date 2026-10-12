@@ -9,6 +9,8 @@ import tailwindcss from '@tailwindcss/vite';
 const esVercel = process.env.VERCEL === '1' || !!process.env.VERCEL_REGION;
 
 export default defineConfig({
+  // Dominio público: corrige canonical, og:url y URLs absolutas de metadata
+  site: 'https://chollo-glam.vercel.app',
   output: 'server',
   adapter: esVercel
     ? vercel({

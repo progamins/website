@@ -98,6 +98,12 @@ export const getCategoriaBySlug = (slug: string) =>
 export const getColecciones = () =>
   db.prepare('SELECT * FROM colecciones WHERE activa = 1 ORDER BY id').all() as Coleccion[];
 
+export const getColeccionBySlug = (slug: string) =>
+  db.prepare('SELECT * FROM colecciones WHERE slug = ? AND activa = 1').get(slug) as Coleccion | undefined;
+
+export const getProductosPorColeccion = (coleccionId: number) =>
+  db.prepare(`${PROD_SELECT} WHERE p.activo = 1 AND p.coleccion_id = ? ORDER BY p.num_valoraciones DESC`).all(coleccionId) as Producto[];
+
 export const getProductosDestacados = (limit = 8) =>
   db.prepare(`${PROD_SELECT} WHERE p.activo = 1 AND p.destacado = 1 ORDER BY p.num_valoraciones DESC LIMIT ?`).all(limit) as Producto[];
 

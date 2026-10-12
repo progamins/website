@@ -12,78 +12,112 @@ const links = [
   { href: '/contacto', label: 'Contacto' },
 ];
 const isAdmin = user && user.rol !== 'cliente';
-const navLinkCls = (href: string) => path === href ? 'text-gold' : 'text-ink-soft hover:text-gold-dark';
+const navLinkCls = (href: string) => path === href ? 'text-gold-dark after:w-full' : 'text-ink-soft hover:text-ink after:w-0 hover:after:w-full';
+const mobileLinkCls = (href: string) => path === href ? 'text-gold-dark' : 'text-ink-soft';
 ---
-<header class="sticky top-0 z-50 border-b border-ink/10 bg-cream/90 backdrop-blur">
-  <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-    <a href="/" class="flex items-center gap-2.5">
+<header class="sticky top-0 z-50 border-b border-sand-2 bg-cream/95 backdrop-blur">
+  <!-- Barra de anuncios: promoción verificada + identidad de marca -->
+  <div class="bg-ink-2 text-cream">
+    <p class="mx-auto max-w-7xl px-4 py-1.5 text-center text-[11px] font-medium tracking-[0.08em] sm:px-6">
+      Envío gratis desde S/ 199 a todo el Perú
+      <span class="mx-2 hidden text-gold-light sm:inline" aria-hidden="true">·</span>
+      <span class="hidden sm:inline">Piezas hechas a mano en el Perú</span>
+    </p>
+  </div>
+
+  <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:h-[4.5rem]">
+    <a href="/" class="group flex shrink-0 items-center gap-2.5" aria-label="Chollo & Glam — Inicio">
       {logo ? (
         <img src={logo} alt="Chollo & Glam" class="h-10 w-auto max-w-[10rem] object-contain" />
       ) : (
-        <span class="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-gold-light to-gold-dark font-display text-lg font-bold text-white shadow-sm shadow-gold/30">C</span>
+        <>
+          <span class="flex h-10 w-10 items-center justify-center rounded-full bg-ink-2 font-display text-lg font-semibold text-gold-light ring-1 ring-gold/40 transition group-hover:ring-gold-light">C</span>
+          <span class="hidden font-display text-[1.35rem] leading-none text-ink sm:block">
+            Chollo <span class="text-gold">&</span> Glam
+          </span>
+        </>
       )}
-      {!logo && <span class="font-display text-2xl tracking-wide text-ink">Chollo <span class="text-gold">&amp;</span> Glam</span>}
     </a>
 
-    <nav class="hidden items-center gap-6 md:flex">
+    <nav class="hidden items-center gap-7 md:flex" aria-label="Navegación principal">
       <div class="relative" data-catmenu>
-        <button type="button" data-catbtn class="flex items-center gap-1.5 rounded-full bg-ink px-4 py-1.5 text-sm font-semibold text-cream transition hover:bg-ink-3">
-          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h10"/></svg>
+        <button type="button" data-catbtn aria-expanded="false" aria-controls="catpanel" class="flex items-center gap-1.5 py-2 text-sm font-medium text-ink transition hover:text-gold-dark">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h10"/></svg>
           Categorías
-          <svg class="h-3.5 w-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+          <svg class="h-3 w-3 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
         </button>
       </div>
       {links.map((l) => (
-        <a href={l.href} class:list={["text-sm font-medium tracking-wide transition", navLinkCls(l.href)]}>{l.label}</a>
+        <a href={l.href} class:list={["relative py-2 text-sm font-medium tracking-wide transition after:absolute after:-bottom-0.5 after:left-0 after:h-px after:bg-gold after:transition-all after:duration-300", navLinkCls(l.href)]}>{l.label}</a>
       ))}
-      {isAdmin && <a href="/admin" class="text-sm font-medium text-gold transition hover:text-gold-dark">Panel</a>}
+      {isAdmin && <a href="/admin" class="rounded-full bg-ink-2 px-3.5 py-1.5 text-xs font-semibold text-cream transition hover:bg-vino-dark">Panel</a>}
     </nav>
 
-    <div class="flex items-center gap-2.5">
-      <form action="/buscar" method="get" class="hidden items-center gap-2 rounded-full border border-ink/15 bg-surface px-3.5 py-1.5 lg:flex">
-        <svg class="h-4 w-4 text-ink-soft/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        <input name="q" placeholder="Buscar productos…" class="w-40 bg-transparent text-sm text-ink placeholder-ink-soft/50 outline-none" />
+    <div class="flex items-center gap-1 sm:gap-2">
+      <!-- Buscador escritorio -->
+      <form action="/buscar" method="get" role="search" class="hidden items-center gap-2 rounded-full border border-sand-2 bg-surface px-3.5 py-1.5 transition focus-within:border-gold focus-within:ring-1 focus-within:ring-gold/40 lg:flex">
+        <svg class="h-4 w-4 shrink-0 text-ink-soft/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input name="q" placeholder="Buscar joyas…" aria-label="Buscar productos" class="w-36 bg-transparent text-sm text-ink placeholder-ink-soft/50 outline-none focus:w-44 focus-visible:outline-none transition-[width]" />
       </form>
 
-      <a href="/carrito" class="relative text-ink-soft transition hover:text-gold" aria-label="Carrito">
+      <!-- Buscador móvil (desplegable) -->
+      <button type="button" data-search-toggle aria-expanded="false" aria-controls="mobile-search" class="flex h-9 w-9 items-center justify-center rounded-full text-ink-soft transition hover:bg-sand hover:text-ink lg:hidden" aria-label="Abrir buscador">
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      </button>
+
+      <a href="/favoritos" class="relative hidden h-9 w-9 items-center justify-center rounded-full text-ink-soft transition hover:bg-sand hover:text-gold-dark sm:flex" aria-label="Mis favoritos">
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M20.8 4.6a5.5 5.5 0 00-7.7 0L12 5.7l-1.1-1.1a5.5 5.5 0 00-7.7 7.7l8.8 8.8 8.8-8.8a5.5 5.5 0 000-7.7z"/></svg>
+      </a>
+
+      <a href="/carrito" class="relative flex h-9 w-9 items-center justify-center rounded-full text-ink-soft transition hover:bg-sand hover:text-gold-dark" aria-label="Carrito de compras">
         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 5h13"/></svg>
-        <span class="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-gold text-[10px] font-bold text-white" data-cart-count>0</span>
+        <span class="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-ink-2 text-[10px] font-bold text-cream" data-cart-count>0</span>
       </a>
 
       {user ? (
-        <a href="/cuenta" class="flex items-center gap-2 text-ink-soft transition hover:text-gold">
+        <a href="/cuenta" class="flex items-center gap-2 rounded-full px-2 py-1.5 text-ink-soft transition hover:bg-sand hover:text-ink" aria-label={`Mi cuenta: ${user.nombre}`}>
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-          <span class="hidden text-sm sm:inline">{user.nombre.split(' ')[0]}</span>
+          <span class="hidden text-sm font-medium lg:inline">{user.nombre.split(' ')[0]}</span>
         </a>
       ) : (
-        <a href="/login" class="hidden rounded-full bg-ink px-4 py-1.5 text-sm font-semibold text-cream transition hover:bg-ink-3 sm:inline-block">Entrar</a>
+        <a href="/login" class="hidden rounded-full border border-ink-2 px-4 py-1.5 text-sm font-semibold text-ink-2 transition hover:bg-ink-2 hover:text-cream sm:inline-block">Entrar</a>
       )}
 
-      <button type="button" data-catbtn-m class="flex h-9 w-9 items-center justify-center rounded-full border border-ink/15 text-ink-soft transition hover:border-gold hover:text-gold md:hidden" aria-label="Categorías">
-        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h10"/></svg>
+      <button type="button" data-catbtn-m class="flex h-9 w-9 items-center justify-center rounded-full text-ink-soft transition hover:bg-sand hover:text-ink md:hidden" aria-expanded="false" aria-controls="catpanel" aria-label="Ver categorías">
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h10"/></svg>
       </button>
     </div>
   </div>
 
+  <!-- Buscador móvil desplegado -->
+  <div id="mobile-search" data-search-panel class="hidden border-t border-sand-2 px-4 pb-3 pt-2 lg:hidden">
+    <form action="/buscar" method="get" role="search" class="flex items-center gap-2 rounded-full border border-sand-2 bg-surface px-4 py-2.5 focus-within:border-gold">
+      <svg class="h-4 w-4 shrink-0 text-ink-soft/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <input name="q" placeholder="Buscar joyas y accesorios…" aria-label="Buscar productos" class="w-full bg-transparent text-sm text-ink placeholder-ink-soft/50 outline-none" />
+    </form>
+  </div>
+
   <!-- Panel de categorías -->
-  <div data-catpanel class="absolute inset-x-0 top-full hidden border-t border-ink/10 bg-surface shadow-2xl shadow-ink/10">
-    <div class="mx-auto max-w-7xl px-4 py-5 sm:px-6">
-      <div class="grid grid-cols-3 gap-1 sm:grid-cols-4 lg:grid-cols-5">
+  <div id="catpanel" data-catpanel class="absolute inset-x-0 top-full hidden border-t border-sand-2 bg-surface shadow-xl shadow-ink/10">
+    <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+      <div class="grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-4">
         {categorias.map((c) => (
-          <a href={`/categoria/${c.slug}`} class="group flex items-center gap-2.5 rounded-xl px-2.5 py-2 transition hover:bg-sand">
-            <span class="h-10 w-10 shrink-0 overflow-hidden rounded-full border border-ink/10 bg-sand shadow-sm">
-              {(c.icono ?? c.imagen) && <img src={c.icono ?? c.imagen} alt={c.nombre} loading="lazy" class="h-full w-full object-cover transition duration-300 group-hover:scale-105" />}
+          <a href={`/categoria/${c.slug}`} class="group flex items-center gap-3 rounded-xl p-2 transition hover:bg-sand">
+            <span class="h-11 w-11 shrink-0 overflow-hidden rounded-full border border-sand-2 bg-sand shadow-sm">
+              {(c.icono ?? c.imagen) && <img src={c.icono ?? c.imagen} alt="" loading="lazy" class="h-full w-full object-cover transition duration-300 group-hover:scale-105" />}
             </span>
-            <span class="truncate text-sm font-medium text-ink-soft group-hover:text-gold-dark">{c.nombre}</span>
+            <span class="truncate text-sm font-medium text-ink-soft transition group-hover:text-ink">{c.nombre}</span>
+            <svg class="ml-auto h-4 w-4 shrink-0 -translate-x-1 text-gold opacity-0 transition group-hover:translate-x-0 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
           </a>
         ))}
       </div>
     </div>
   </div>
 
-  <nav class="flex items-center justify-center gap-6 border-t border-ink/5 px-4 py-2 md:hidden">
+  <!-- Navegación inferior móvil -->
+  <nav class="flex items-center justify-center gap-7 border-t border-sand-2/70 px-4 py-2 md:hidden" aria-label="Navegación móvil">
     {links.map((l) => (
-      <a href={l.href} class:list={["text-xs font-medium", navLinkCls(l.href)]}>{l.label}</a>
+      <a href={l.href} class:list={["text-xs font-medium", mobileLinkCls(l.href)]}>{l.label}</a>
     ))}
   </nav>
 </header>
@@ -95,9 +129,12 @@ const navLinkCls = (href: string) => path === href ? 'text-gold' : 'text-ink-sof
   const btnM = document.querySelector('[data-catbtn-m]');
   let closeTimer: ReturnType<typeof setTimeout> | undefined;
 
-  const open = () => { if (closeTimer) clearTimeout(closeTimer); panel?.classList.remove('hidden'); };
-  const closeNow = () => { if (closeTimer) clearTimeout(closeTimer); panel?.classList.add('hidden'); };
-  const closeSoon = () => { if (closeTimer) clearTimeout(closeTimer); closeTimer = setTimeout(() => panel?.classList.add('hidden'), 180); };
+  const setExpanded = (open: boolean) => {
+    [btn, btnM].forEach((b) => b?.setAttribute('aria-expanded', String(open)));
+  };
+  const open = () => { if (closeTimer) clearTimeout(closeTimer); panel?.classList.remove('hidden'); setExpanded(true); };
+  const closeNow = () => { if (closeTimer) clearTimeout(closeTimer); panel?.classList.add('hidden'); setExpanded(false); };
+  const closeSoon = () => { if (closeTimer) clearTimeout(closeTimer); closeTimer = setTimeout(closeNow, 180); };
   const isOpen = () => panel && !panel.classList.contains('hidden');
 
   btn?.addEventListener('click', (e) => { e.stopPropagation(); isOpen() ? closeNow() : open(); });
@@ -118,6 +155,30 @@ const navLinkCls = (href: string) => path === href ? 'text-gold' : 'text-ink-sof
     if (!t.closest('[data-catpanel]') && !t.closest('[data-catbtn]') && !t.closest('[data-catbtn-m]')) closeNow();
   });
 
+  // Cerrar con Escape (accesibilidad por teclado)
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { closeNow(); closeSearch(); }
+  });
+
+  // Buscador móvil
+  const searchToggle = document.querySelector('[data-search-toggle]');
+  const searchPanel = document.querySelector('[data-search-panel]');
+  const closeSearch = () => {
+    searchPanel?.classList.add('hidden');
+    searchToggle?.setAttribute('aria-expanded', 'false');
+  };
+  searchToggle?.addEventListener('click', () => {
+    const openSearch = searchPanel?.classList.contains('hidden') ?? false;
+    if (openSearch) {
+      searchPanel?.classList.remove('hidden');
+      searchToggle.setAttribute('aria-expanded', 'true');
+      searchPanel?.querySelector('input')?.focus();
+    } else {
+      closeSearch();
+    }
+  });
+
+  // Sincronizar contador de carrito
   const sync = () => {
     const el = document.querySelector('[data-cart-count]');
     if (!el) return;

@@ -7,9 +7,9 @@ const productos = getNovedades(24);
 <Layout title="Novedades · Chollo & Glam">
   <section class="mx-auto max-w-7xl px-4 py-16 sm:px-6">
     <div class="mb-10 text-center">
-      <p class="text-[11px] uppercase tracking-[0.25em] text-gold">Recién llegados</p>
-      <h1 class="mt-2 font-display text-4xl text-ink">Novedades</h1>
-      <p class="mx-auto mt-3 max-w-xl text-ink-soft/70">Descubre nuestras últimas piezas artesanales, diseñadas con dedicación por maestros orfebres peruanos.</p>
+      <p class="flex items-center justify-center gap-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-gold-dark"><span class="h-px w-8 bg-gold/60" aria-hidden="true"></span>Recién llegados<span class="h-px w-8 bg-gold/60" aria-hidden="true"></span></p>
+      <h1 class="mt-3 font-display text-4xl text-ink sm:text-5xl">Novedades</h1>
+      <p class="mx-auto mt-3 max-w-xl text-ink-soft">Descubre nuestras últimas piezas artesanales, diseñadas con dedicación por maestros orfebres peruanos.</p>
     </div>
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
       {productos.map((p) => <ProductCard producto={p} />)}

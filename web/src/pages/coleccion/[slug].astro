@@ -1,0 +1,31 @@
+---
+import Layout from '../../components/Layout.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import { getColeccionBySlug, getProductosPorColeccion } from '../../lib/db';
+export const prerender = false;
+const { slug } = Astro.params;
+const coleccion = getColeccionBySlug(slug!);
+if (!coleccion) return Astro.redirect('/404');
+const productos = getProductosPorColeccion(coleccion.id);
+---
+<Layout title={`${coleccion.nombre} · Colección · Chollo & Glam`} description={coleccion.descripcion ?? undefined} image={coleccion.imagen ?? undefined}>
+  <section class="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-16">
+    <div class="mx-auto mb-12 max-w-2xl text-center">
+      <a href="/#colecciones" class="text-xs font-medium text-ink-soft/70 transition hover:text-gold-dark">← Colecciones</a>
+      <p class="mt-4 text-[11px] font-semibold uppercase tracking-[0.25em] text-gold-dark">Colección</p>
+      <h1 class="mt-2 font-display text-4xl text-ink sm:text-5xl">{coleccion.nombre}</h1>
+      {coleccion.descripcion && <p class="mx-auto mt-4 leading-relaxed text-ink-soft">{coleccion.descripcion}</p>}
+    </div>
+    {productos.length > 0 ? (
+      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {productos.map((p) => <ProductCard producto={p} />)}
+      </div>
+    ) : (
+      <div class="mx-auto max-w-md rounded-2xl border border-sand-2 bg-surface p-10 text-center">
+        <p class="font-display text-2xl text-ink">Próximamente</p>
+        <p class="mt-2 text-sm text-ink-soft">Esta colección se está preparando. Descubre nuestras piezas disponibles en el catálogo.</p>
+        <a href="/novedades" class="mt-5 inline-block rounded-full bg-ink-2 px-6 py-2.5 text-sm font-semibold text-cream transition hover:bg-vino-dark">Explorar novedades</a>
+      </div>
+    )}
+  </section>
+</Layout>

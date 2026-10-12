@@ -4,132 +4,152 @@ import ProductCard from '../components/ProductCard.astro';
 import FlashTimer from '../components/FlashTimer.astro';
 import BannerCarousel from '../components/BannerCarousel.astro';
 import TrustBar from '../components/TrustBar.astro';
-import { getOfertaFlashActiva, getProductosDestacados, getNovedades, getCategorias, getColecciones, getTestimonios, getInstagramFeed } from '../lib/db';
+import { getOfertaFlashActiva, getProductosDestacados, getNovedades, getCategorias, getColecciones, getTestimonios, getInstagramFeed, type Coleccion } from '../lib/db';
 
 const oferta = getOfertaFlashActiva();
 const destacados = getProductosDestacados(8);
-const novedades = getNovedades(4);
+// Novedades sin duplicar los destacados: cada sección muestra piezas distintas
+const destacadosIds = new Set(destacados.map((p) => p.id));
+const novedades = getNovedades(16).filter((p) => !destacadosIds.has(p.id)).slice(0, 4);
 const categorias = getCategorias();
 const colecciones = getColecciones();
 const testimonios = getTestimonios();
 const instagram = getInstagramFeed();
-const sectionTitle = 'text-[11px] uppercase tracking-[0.25em] text-gold';
-const sectionHeading = 'mt-2 font-display text-3xl text-ink sm:text-4xl';
+const INSTAGRAM_URL = 'https://www.instagram.com/cholloyglam';
+
+// Fotografías reales de colección incluidas en el proyecto (uploads/colecciones).
+// La BD guarda una imagen SVG de plantilla; mientras el administrador no
+// registre una fotografía definitiva, se usa la foto real correspondiente
+// a cada colección (mismo orden de subida: Andes, Amazonía, Costa).
+const FOTOS_COLECCION: Record<number, string> = {
+  1: '/uploads/colecciones/col_1788077208169.jpg',
+  2: '/uploads/colecciones/col_1788077303478.jpg',
+  3: '/uploads/colecciones/col_1788077356470.jpg',
+};
+const fotoColeccion = (c: Coleccion) =>
+  c.imagen && !c.imagen.endsWith('.svg') ? c.imagen : FOTOS_COLECCION[c.id] ?? c.imagen;
+
+const eyebrow = 'flex items-center justify-center gap-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-gold-dark';
+const eyebrowLeft = 'flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-gold-dark';
+const heading = 'mt-3 font-display text-3xl text-ink sm:text-4xl lg:text-[2.8rem]';
 ---
 
 <Layout title="Chollo & Glam · Joyería y artesanía peruana">
 
-  <!-- CARRUSEL DE BANNERS (a pantalla completa, sin textos) -->
+  <!-- HERO EDITORIAL: carrusel de banners configurados en el panel -->
   <BannerCarousel />
 
-  <!-- TRUST BAR: beneficios con iconos -->
+  <!-- BENEFICIOS: franja de confianza -->
   <TrustBar />
 
-  <!-- CATEGORÍAS: navegación rápida con iconos -->
-  <nav aria-label="Comprar por categoría" class="mx-auto max-w-7xl px-4 pt-8 sm:px-6">
-    <div class="flex gap-2.5 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      {categorias.slice(0, 10).map((c) => (
-        <a href={`/categoria/${c.slug}`} class="group flex shrink-0 items-center gap-2 rounded-full border border-ink/10 bg-surface py-2 pl-2 pr-4 shadow-sm transition hover:-translate-y-0.5 hover:border-gold/60 hover:shadow-md">
-          <span class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-sand ring-1 ring-ink/5">
-            {c.icono ? <img src={c.icono} alt="" class="h-5 w-5 object-contain" loading="lazy" /> : <span class="text-xs">◆</span>}
-          </span>
-          <span class="text-sm font-medium text-ink group-hover:text-gold-dark">{c.nombre}</span>
-        </a>
-      ))}
-    </div>
-  </nav>
+  <!-- CATEGORÍAS -->
+  {categorias.length > 0 && (
+    <section class="reveal mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20" aria-label="Comprar por categoría">
+      <div class="mb-10 text-center">
+        <p class={eyebrow}><span class="h-px w-8 bg-gold/60" aria-hidden="true"></span>Explora por categoría<span class="h-px w-8 bg-gold/60" aria-hidden="true"></span></p>
+        <h2 class={heading}>Nuestras categorías</h2>
+      </div>
+      <div class="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-8">
+        {categorias.map((c) => (
+          <a href={`/categoria/${c.slug}`} class="group text-center">
+            <div class="overflow-hidden rounded-xl border border-sand-2 bg-sand shadow-sm transition duration-300 group-hover:-translate-y-1 group-hover:border-gold/60 group-hover:shadow-lg group-hover:shadow-ink/5">
+              <div class="aspect-[3/4] w-full">
+                {c.imagen && <img src={c.imagen} alt={c.nombre} loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.05]" />}
+              </div>
+            </div>
+            <span class="mt-3 block text-sm font-medium text-ink transition group-hover:text-gold-dark">{c.nombre}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
 
-  <!-- OFERTA FLASH (sección oscura de contraste) -->
+  <!-- OFERTA FLASH: descuentos con fecha de finalización real -->
   {oferta && (
-    <section class="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-      <div class="rounded-3xl bg-gradient-to-br from-ink-3 to-ink-2 p-8 shadow-2xl shadow-gold/5 ring-1 ring-gold/30">
+    <section class="reveal mx-auto max-w-7xl px-4 pb-16 sm:px-6 sm:pb-20" aria-label="Oferta flash">
+      <div class="rounded-3xl bg-gradient-to-br from-ink-2 to-ink-3 p-6 shadow-xl shadow-ink-2/20 ring-1 ring-gold/25 sm:p-10">
         <div class="flex flex-wrap items-center justify-between gap-6">
           <div>
-            <p class="text-xs uppercase tracking-[0.25em] text-gold-light">Descuentos por tiempo limitado</p>
-            <h2 class="mt-1 font-display text-3xl text-white">{oferta.oferta.titulo}</h2>
+            <p class="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-gold-light">
+              <span class="h-px w-8 bg-gold-light/70" aria-hidden="true"></span>
+              Descuentos por tiempo limitado
+            </p>
+            <h2 class="mt-3 font-display text-3xl text-cream sm:text-4xl">{oferta.oferta.titulo}</h2>
           </div>
           <FlashTimer fin={oferta.oferta.tiempo_fin} />
         </div>
-        <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="mt-9 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {oferta.productos.map((p) => <ProductCard producto={p} />)}
+        </div>
+        <div class="mt-8 text-center">
+          <a href="/ofertas" class="inline-flex items-center gap-2 text-sm font-semibold text-gold-light transition hover:text-cream">
+            Ver todas las ofertas
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          </a>
         </div>
       </div>
     </section>
   )}
 
-  <!-- DESTACADOS -->
-  <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-    <div class="mb-8 flex items-end justify-between">
+  <!-- PRODUCTOS DESTACADOS -->
+  <section class="reveal mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20" aria-label="Productos destacados">
+    <div class="mb-10 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <p class={sectionTitle}>Favoritos de la casa</p>
-        <h2 class={sectionHeading}>Productos destacados</h2>
+        <p class={eyebrowLeft}><span class="h-px w-8 bg-gold/60" aria-hidden="true"></span>Favoritos de la casa</p>
+        <h2 class={heading}>Productos destacados</h2>
       </div>
-      <a href="/novedades" class="text-sm font-medium text-gold hover:text-gold-dark">Ver todo →</a>
+      <a href="/ofertas" class="group hidden items-center gap-2 text-sm font-semibold text-gold-dark transition hover:text-ink sm:inline-flex">
+        Ver ofertas
+        <svg class="h-4 w-4 transition group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+      </a>
     </div>
-    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
       {destacados.map((p) => <ProductCard producto={p} />)}
     </div>
   </section>
 
-  <!-- CATEGORÍAS -->
-  <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-    <div class="mb-8 flex items-end justify-between">
-      <div>
-        <p class={sectionTitle}>Explora por categoría</p>
-        <h2 class={sectionHeading}>Nuestras categorías</h2>
-      </div>
-    </div>
-    <div class="flex gap-5 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      {categorias.map((c) => (
-        <a href={`/categoria/${c.slug}`} class="group flex shrink-0 flex-col items-center gap-2.5">
-          <div class="relative h-20 w-20 sm:h-24 sm:w-24">
-            <div class="h-full w-full overflow-hidden rounded-full border-2 border-white shadow-md ring-1 ring-ink/10 transition duration-300 group-hover:ring-2 group-hover:ring-gold/70">
-              {c.imagen && <img src={c.imagen} alt={c.nombre} loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-110" />}
-            </div>
-            {c.icono && (
-              <span class="absolute -bottom-1.5 -right-1.5 flex h-8 w-8 items-center justify-center overflow-hidden rounded-full shadow-lg ring-2 ring-white sm:h-9 sm:w-9">
-                <img src={c.icono} alt="" class="h-full w-full object-cover" loading="lazy" />
-              </span>
-            )}
-          </div>
-          <span class="text-center text-xs font-medium text-ink-soft group-hover:text-gold-dark">{c.nombre}</span>
+  <!-- NOVEDADES: piezas distintas de los destacados -->
+  {novedades.length > 0 && (
+    <section class="reveal mx-auto max-w-7xl px-4 pb-16 sm:px-6 sm:pb-20" aria-label="Novedades">
+      <div class="mb-10 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p class={eyebrowLeft}><span class="h-px w-8 bg-gold/60" aria-hidden="true"></span>Recién llegados</p>
+          <h2 class={heading}>Novedades</h2>
+        </div>
+        <a href="/novedades" class="group inline-flex items-center gap-2 text-sm font-semibold text-gold-dark transition hover:text-ink">
+          Explorar novedades
+          <svg class="h-4 w-4 transition group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
         </a>
-      ))}
-    </div>
-  </section>
-
-  <!-- NOVEDADES -->
-  <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-    <div class="mb-8 flex items-end justify-between">
-      <div>
-        <p class={sectionTitle}>Recién llegados</p>
-        <h2 class={sectionHeading}>Novedades</h2>
       </div>
-      <a href="/novedades" class="text-sm font-medium text-gold hover:text-gold-dark">Ver todo →</a>
-    </div>
-    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      {novedades.map((p) => <ProductCard producto={p} />)}
-    </div>
-  </section>
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {novedades.map((p) => <ProductCard producto={p} />)}
+      </div>
+    </section>
+  )}
 
-  <!-- COLECCIONES -->
+  <!-- COLECCIONES CON IDENTIDAD PERUANA -->
   {colecciones.length > 0 && (
-    <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-      <div class="mb-8 text-center">
-        <p class={sectionTitle}>Ediciones limitadas</p>
-        <h2 class={sectionHeading}>Historias en oro</h2>
+    <section id="colecciones" class="reveal mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20" aria-label="Colecciones">
+      <div class="mb-10 max-w-2xl">
+        <p class={eyebrowLeft}><span class="h-px w-8 bg-gold/60" aria-hidden="true"></span>Ediciones de autor</p>
+        <h2 class={heading}>Historias de Perú en cada pieza</h2>
+        <p class="mt-3 max-w-xl text-ink-soft">Tres colecciones inspiradas en los paisajes que nos vieron nacer: la montaña, la selva y el mar.</p>
       </div>
       <div class="grid gap-6 md:grid-cols-3">
         {colecciones.map((c) => (
-          <div class="group relative overflow-hidden rounded-3xl border border-ink/10 shadow-sm">
-            <div class="aspect-[4/5] w-full bg-sand">
-              {c.imagen && <img src={c.imagen} alt={c.nombre} loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />}
+          <a href={`/coleccion/${c.slug}`} class="group relative block overflow-hidden rounded-2xl border border-sand-2 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-ink/10">
+            <div class="aspect-[4/3] w-full bg-sand">
+              {fotoColeccion(c) && <img src={fotoColeccion(c)} alt={`Colección ${c.nombre}`} loading="lazy" class="h-full w-full object-cover transition duration-700 group-hover:scale-[1.04]" />}
             </div>
-            <div class="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-ink/90 via-ink/30 to-transparent p-6">
-              <h3 class="font-display text-2xl text-white">{c.nombre}</h3>
-              {c.descripcion && <p class="mt-2 line-clamp-2 text-sm text-gray-200">{c.descripcion}</p>}
+            <div class="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-ink-2/95 via-ink-2/35 to-transparent p-6">
+              <h3 class="font-display text-2xl text-cream sm:text-[1.7rem]">{c.nombre}</h3>
+              {c.descripcion && <p class="mt-1.5 line-clamp-2 text-sm leading-relaxed text-cream/75">{c.descripcion}</p>}
+              <span class="mt-4 inline-flex w-fit items-center gap-2 border-b border-gold-light/60 pb-0.5 text-sm font-semibold text-gold-light transition group-hover:gap-3">
+                Explorar colección
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+              </span>
             </div>
-          </div>
+          </a>
         ))}
       </div>
     </section>
@@ -137,18 +157,24 @@ const sectionHeading = 'mt-2 font-display text-3xl text-ink sm:text-4xl';
 
   <!-- TESTIMONIOS -->
   {testimonios.length > 0 && (
-    <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-      <div class="mb-8 text-center">
-        <p class={sectionTitle}>Opiniones</p>
-        <h2 class={sectionHeading}>Lo que dicen nuestros clientes</h2>
+    <section class="reveal mx-auto max-w-7xl px-4 pb-16 sm:px-6 sm:pb-20" aria-label="Opiniones de clientes">
+      <div class="mb-10 text-center">
+        <p class={eyebrow}><span class="h-px w-8 bg-gold/60" aria-hidden="true"></span>Opiniones<span class="h-px w-8 bg-gold/60" aria-hidden="true"></span></p>
+        <h2 class={heading}>Lo que dicen nuestros clientes</h2>
       </div>
-      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
         {testimonios.map((t) => (
-          <div class="rounded-2xl border border-ink/10 bg-surface p-6 shadow-sm">
-            <div class="text-sm text-gold">{'★'.repeat(Math.round(t.valoracion))}</div>
-            <p class="mt-3 text-sm leading-relaxed text-ink-soft">"{t.comentario}"</p>
-            <p class="mt-4 font-medium text-ink">{t.nombre_cliente}</p>
-          </div>
+          <figure class="flex flex-col rounded-2xl border border-sand-2 bg-surface p-6 shadow-sm">
+            <span class="font-display text-4xl leading-none text-gold/50" aria-hidden="true">"</span>
+            <div class="mt-1 text-sm text-gold" aria-label={`${t.valoracion} de 5 estrellas`}>
+              {'★'.repeat(Math.round(t.valoracion))}<span class="text-ink-soft/40" aria-hidden="true">{'★'.repeat(5 - Math.round(t.valoracion))}</span>
+            </div>
+            <blockquote class="mt-3 flex-1 text-sm leading-relaxed text-ink-soft">{t.comentario}</blockquote>
+            <figcaption class="mt-5 flex items-center gap-3 border-t border-sand-2 pt-4">
+              {t.foto_cliente && <img src={t.foto_cliente} alt="" loading="lazy" class="h-9 w-9 rounded-full object-cover ring-1 ring-sand-2" />}
+              <span class="text-sm font-semibold text-ink">{t.nombre_cliente}</span>
+            </figcaption>
+          </figure>
         ))}
       </div>
     </section>
@@ -156,19 +182,26 @@ const sectionHeading = 'mt-2 font-display text-3xl text-ink sm:text-4xl';
 
   <!-- INSTAGRAM -->
   {instagram.length > 0 && (
-    <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-      <div class="mb-8 flex items-center justify-between">
+    <section class="reveal mx-auto max-w-7xl px-4 pb-20 sm:px-6" aria-label="Instagram">
+      <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p class={sectionTitle}>Síguenos</p>
-          <h2 class={sectionHeading}>@cholloyglam</h2>
+          <p class={eyebrowLeft}><span class="h-px w-8 bg-gold/60" aria-hidden="true"></span>Síguenos</p>
+          <h2 class={heading}>@cholloyglam</h2>
         </div>
+        <a href={INSTAGRAM_URL} target="_blank" rel="noopener" class="group inline-flex items-center gap-2 text-sm font-semibold text-gold-dark transition hover:text-ink">
+          Ver perfil en Instagram
+          <svg class="h-4 w-4 transition group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+        </a>
       </div>
       <div class="grid grid-cols-3 gap-3 md:grid-cols-6">
         {instagram.map((i) => (
-          <a href={i.url ?? '#'} target="_blank" class="group relative overflow-hidden rounded-xl border border-ink/10 bg-surface">
-            <div class="aspect-square w-full bg-sand">
-              {i.imagen && <img src={i.imagen} alt="Instagram" loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />}
+          <a href={i.url ?? INSTAGRAM_URL} target="_blank" rel="noopener" class="group relative overflow-hidden rounded-xl border border-sand-2 bg-sand" aria-label="Ver publicación de Instagram">
+            <div class="aspect-square w-full">
+              {i.imagen && <img src={i.imagen} alt="Publicación de Instagram de Chollo & Glam" loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />}
             </div>
+            <span class="pointer-events-none absolute inset-0 flex items-center justify-center bg-ink-2/0 transition duration-300 group-hover:bg-ink-2/40">
+              <svg class="h-6 w-6 scale-75 text-cream opacity-0 transition duration-300 group-hover:scale-100 group-hover:opacity-100" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.07 1.2.05 1.8.25 2.2.42.6.22 1 .48 1.4.9.4.4.7.8.9 1.4.17.4.37 1 .42 2.2.06 1.3.07 1.7.07 4.9s0 3.6-.07 4.9c-.05 1.2-.25 1.8-.42 2.2-.22.6-.48 1-.9 1.4-.4.4-.8.7-1.4.9-.4.17-1 .37-2.2.42-1.3.06-1.7.07-4.9.07s-3.6 0-4.9-.07c-1.2-.05-1.8-.25-2.2-.42a3.8 3.8 0 01-1.4-.9 3.8 3.8 0 01-.9-1.4c-.17-.4-.37-1-.42-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.07-4.9c.05-1.2.25-1.8.42-2.2.22-.6.48-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.17 1-.37 2.2-.42C8.4 2.2 8.8 2.2 12 2.2zm0 4.7a4.9 4.9 0 110 9.8 4.9 4.9 0 010-9.8zm0 1.8a3.1 3.1 0 100 6.2 3.1 3.1 0 000-6.2zm5.1-2.9a1.1 1.1 0 110 2.2 1.1 1.1 0 010-2.2z"/></svg>
+            </span>
           </a>
         ))}
       </div>

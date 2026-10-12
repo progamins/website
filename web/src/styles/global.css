@@ -1,22 +1,28 @@
 @import "tailwindcss";
 
 @theme {
-  /* Paleta boutique · lujo cálido con raíces peruanas */
-  --color-cream: #faf6ef;
-  --color-surface: #ffffff;
-  --color-sand: #f2ead9;
-  --color-sand-2: #eae0cb;
-  --color-ink: #2a2018;
-  --color-ink-soft: #57493a;
-  --color-ink-2: #17120d;
-  --color-ink-3: #221a12;
-  --color-gold: #a87c31;
-  --color-gold-light: #c8a25a;
-  --color-gold-dark: #86611f;
-  --color-bronce: #b5542f;
-  --color-ande: #1f5b54;
-  --font-display: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
-  --font-sans: "Inter", system-ui, sans-serif;
+  /* ============================================================
+     Chollo & Glam — Contemporary Peruvian Jewelry
+     Editorial luxury · Accessible elegance
+     Paleta: marfil cálido, vino profundo, oro champán.
+     ============================================================ */
+  --color-cream: #F5F0E8;       /* marfil cálido — fondo principal */
+  --color-surface: #FFFFFF;     /* blanco — superficies de producto */
+  --color-sand: #EFE7D9;        /* arena — bloques suaves */
+  --color-sand-2: #E8E0D6;      /* bordes y líneas */
+  --color-ink: #29231F;         /* texto principal */
+  --color-ink-soft: #766B60;    /* texto secundario */
+  --color-ink-2: #4A2029;       /* vino profundo — acción e identidad */
+  --color-ink-3: #38181F;       /* vino más profundo — profundidad */
+  --color-vino: #4A2029;        /* alias semántico de ink-2 */
+  --color-vino-dark: #38181F;   /* alias semántico de ink-3 */
+  --color-gold: #A8823F;        /* oro — acentos e iconografía */
+  --color-gold-light: #C5A46D;  /* oro champán — sobre fondos oscuros */
+  --color-gold-dark: #7E5E28;   /* oro profundo — texto legible en claro */
+  --color-bronce: #B5542F;      /* descuentos */
+  --color-ande: #1F5B54;        /* éxito y confirmaciones */
+  --font-display: "Cormorant Garamond", "Georgia", serif;
+  --font-sans: "DM Sans", "system-ui", sans-serif;
 }
 
 html {
@@ -24,35 +30,47 @@ html {
   background-color: var(--color-cream);
   color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
+/* Encabezados editoriales: serif de alto contraste, tamaño generoso */
 h1, h2, h3, h4, .font-display {
   font-family: var(--font-display);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.08;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  line-height: 1.12;
+  text-wrap: balance;
 }
 
 ::selection {
-  background: var(--color-gold);
-  color: #fffdf8;
+  background: var(--color-gold-light);
+  color: var(--color-ink);
 }
 
-/* Texto con gradiente dorado (para fondos oscuros del hero) */
-.gold-gradient-text {
-  background: linear-gradient(120deg, #e2c078, #c8a25a 55%, #a87c31);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+/* ===== Estados de foco accesibles (navegación por teclado) ===== */
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 
-/* Texto degradado elegante sobre fondo claro */
-.dark-gradient-text {
-  background: linear-gradient(120deg, #a87c31, #b5542f 60%, #1f5b54);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+/* ===== Aparición progresiva de secciones =====
+   Solo actúa cuando JS está disponible (.js en <html>);
+   sin JS, todo el contenido es visible por defecto. */
+.js .reveal {
+  opacity: 0;
+  transform: translateY(18px);
 }
+.js .reveal.is-visible {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.js .reveal-delay-1.is-visible { transition-delay: 90ms; }
+.js .reveal-delay-2.is-visible { transition-delay: 180ms; }
+.js .reveal-delay-3.is-visible { transition-delay: 270ms; }
 
 /* ===== Animaciones de carrito ===== */
 @keyframes toast-in {
@@ -80,4 +98,26 @@ h1, h2, h3, h4, .font-display {
   stroke-dasharray: 26;
   stroke-dashoffset: 26;
   animation: draw-check 0.45s 0.12s ease-out forwards;
+}
+
+/* ===== Respeto a prefers-reduced-motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .js .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .js .reveal-delay-1.is-visible,
+  .js .reveal-delay-2.is-visible,
+  .js .reveal-delay-3.is-visible {
+    transition-delay: 0ms;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

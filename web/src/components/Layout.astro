@@ -17,6 +17,11 @@ const can = new URL(Astro.url.pathname + Astro.url.search, Astro.site ?? 'http:/
 <html lang="es">
   <head>
     <meta charset="utf-8" />
+    <script is:inline>
+      // Marca de JS activo: solo con JS habilitado se activan las animaciones
+      // de aparición (.reveal). Sin JS, todo el contenido es visible.
+      document.documentElement.classList.add('js');
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
@@ -33,10 +38,10 @@ const can = new URL(Astro.url.pathname + Astro.url.search, Astro.site ?? 'http:/
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={new URL(image, url.origin).href} />
-    <meta name="theme-color" content="#faf6ef" />
+    <meta name="theme-color" content="#F5F0E8" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <title>{title}</title>
   </head>
   <body class="min-h-screen bg-cream text-ink antialiased">
@@ -55,7 +60,7 @@ const can = new URL(Astro.url.pathname + Astro.url.search, Astro.site ?? 'http:/
       <svg class="h-7 w-7 fill-white" viewBox="0 0 32 32" aria-hidden="true">
         <path d="M16 3C9.4 3 4 8.4 4 15c0 2.1.6 4.2 1.7 6L4 29l8.2-1.6c1.2.6 2.5.9 3.8.9 6.6 0 12-5.4 12-12S22.6 3 16 3zm0 21.8c-1.2 0-2.4-.3-3.5-.8l-.4-.2-4.9 1 1-4.8-.3-.4A9.8 9.8 0 016.2 15c0-5.4 4.4-9.8 9.8-9.8s9.8 4.4 9.8 9.8-4.4 9.8-9.8 9.8zm5.5-7.3c-.3-.2-1.8-.9-2.1-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6.1-.1.3-.4.5-.6.2-.2.2-.4.3-.6.1-.2 0-.4 0-.6-.1-.2-.7-1.7-1-2.3-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.1 1.1-1.1 2.6s1.1 3 1.2 3.2c.2.2 2 3.2 5 4.4 2.5 1 3 .8 3.6.8.5-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.5-.3z"/>
       </svg>
-      <span class="pointer-events-none absolute right-16 whitespace-nowrap rounded-full bg-ink px-4 py-2 text-xs font-semibold text-cream opacity-0 shadow-lg transition group-hover:opacity-100">
+      <span class="pointer-events-none absolute right-16 whitespace-nowrap rounded-full bg-ink-2 px-4 py-2 text-xs font-semibold text-cream opacity-0 shadow-lg transition group-hover:opacity-100">
         ¿Dudas? Escríbenos
       </span>
     </a>
@@ -68,6 +73,26 @@ const can = new URL(Astro.url.pathname + Astro.url.search, Astro.site ?? 'http:/
           t.setAttribute('src', '/assets/placeholder.svg');
         }
       }, true);
+    </script>
+
+    <script>
+      // Aparición progresiva: las secciones con .reveal entran suavemente
+      // al entrar en viewport. Respeta prefers-reduced-motion vía CSS.
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const els = document.querySelectorAll('.reveal');
+      if (reduce || !('IntersectionObserver' in window)) {
+        els.forEach((el) => el.classList.add('is-visible'));
+      } else {
+        const io = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-visible');
+              io.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+        els.forEach((el) => io.observe(el));
+      }
     </script>
   </body>
 </html>

@@ -28,7 +28,7 @@ const items = [
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <title>{title}</title>
   </head>
@@ -96,11 +96,19 @@ const items = [
   // ================================================================
   // CG AdminUI — modales y toasts de producción (sin dependencias)
   // ================================================================
+  interface CgToastOpts { title?: string; message?: string; tone?: string; duration?: number; }
+  interface CgConfirmOpts { title?: string; message?: string; confirmText?: string; cancelText?: string; tone?: string; }
+  declare global {
+    interface Window {
+      cgToast?: (opts: string | CgToastOpts) => () => void;
+      cgConfirm?: (opts: CgConfirmOpts) => Promise<boolean>;
+    }
+  }
   (function () {
     'use strict';
 
     // ---------- Toasts apilados ----------
-    let toastWrap = null;
+    let toastWrap: HTMLDivElement | null = null;
     function getWrap() {
       if (!toastWrap) {
         toastWrap = document.createElement('div');
@@ -109,13 +117,13 @@ const items = [
       }
       return toastWrap;
     }
-    const TONES = {
+    const TONES: Record<string, { icon: string; bg: string; color: string; bar: string; ring: string }> = {
       success: { icon: '✓', bg: 'bg-emerald-500/15', color: 'text-emerald-300', bar: 'bg-emerald-400', ring: 'ring-emerald-400/30' },
       error:   { icon: '✕', bg: 'bg-red-500/15',      color: 'text-red-300',      bar: 'bg-red-400',      ring: 'ring-red-400/30' },
       info:    { icon: '◆', bg: 'bg-gold/15',         color: 'text-gold-light',   bar: 'bg-gold',         ring: 'ring-gold/30' },
     };
-    window.cgToast = function (opts) {
-      const o = typeof opts === 'string' ? { message: opts } : (opts || {});
+    window.cgToast = function (opts: string | CgToastOpts) {
+      const o: CgToastOpts = typeof opts === 'string' ? { message: opts } : (opts || {});
       const t = TONES[o.tone || 'info'] || TONES.info;
       const dur = o.duration || 3800;
       const el = document.createElement('div');
@@ -132,19 +140,19 @@ const items = [
         '<span class="absolute bottom-0 left-0 h-0.5 ' + t.bar + '" style="animation: cgBar ' + dur + 'ms linear forwards"></span>';
       getWrap().appendChild(el);
       const close = () => { el.classList.add('cg-toast-out'); setTimeout(() => el.remove(), 220); };
-      el.querySelector('button').onclick = close;
+      el.querySelector('button')!.onclick = close;
       setTimeout(close, dur);
       return close;
     };
 
     // ---------- Modal de confirmación (Promise) ----------
     let modalAbierto = false;
-    window.cgConfirm = function (opts) {
-      const o = opts || {};
-      return new Promise((resolve) => {
+    window.cgConfirm = function (opts?: CgConfirmOpts) {
+      const o: CgConfirmOpts = opts || {};
+      return new Promise<boolean>((resolve) => {
         if (modalAbierto) return resolve(false);
         modalAbierto = true;
-        const map = {
+        const map: Record<string, { icon: string; bg: string; color: string; btn: string; ring: string }> = {
           danger:  { icon: '!', bg: 'bg-red-500/15',     color: 'text-red-300',    btn: 'bg-red-500 hover:bg-red-600',    ring: 'ring-red-400/30' },
           warning: { icon: '?', bg: 'bg-gold/15',        color: 'text-gold-light', btn: 'bg-gold hover:bg-gold-dark',    ring: 'ring-gold/30' },
           success: { icon: '✓', bg: 'bg-emerald-500/15',  color: 'text-emerald-300', btn: 'bg-emerald-500 hover:bg-emerald-600', ring: 'ring-emerald-400/30' },
@@ -166,19 +174,19 @@ const items = [
               '<button data-yes class="rounded-full px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5 ' + t.btn + '">' + (o.confirmText || 'Confirmar') + '</button>' +
             '</div>' +
           '</div>';
-        const fin = (ok) => {
+        const fin = (ok: boolean) => {
           modalAbierto = false;
           back.classList.add('cg-fade-out');
           setTimeout(() => back.remove(), 160);
           resolve(ok);
         };
-        back.querySelector('[data-yes]').onclick = () => fin(true);
-        back.querySelector('[data-no]').onclick = () => fin(false);
+        back.querySelector<HTMLElement>('[data-yes]')!.onclick = () => fin(true);
+        back.querySelector<HTMLElement>('[data-no]')!.onclick = () => fin(false);
         back.addEventListener('click', (e) => { if (e.target === back) fin(false); });
-        const onKey = (e) => { if (e.key === 'Escape') { document.removeEventListener('keydown', onKey); fin(false); } };
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { document.removeEventListener('keydown', onKey); fin(false); } };
         document.addEventListener('keydown', onKey);
         document.body.appendChild(back);
-        back.querySelector('[data-no]').focus();
+        back.querySelector<HTMLElement>('[data-no]')!.focus();
       });
     };
 
@@ -188,12 +196,12 @@ const items = [
       if (!(form instanceof HTMLFormElement) || !form.dataset.confirm) return;
       if (form.dataset.cgConfirmed === '1') { delete form.dataset.cgConfirmed; return; }
       e.preventDefault();
-      window.cgConfirm({
+      window.cgConfirm!({
         title: form.dataset.confirmTitle,
         message: form.dataset.confirm,
         confirmText: form.dataset.confirmText,
         tone: form.dataset.confirmTone || 'danger',
-      }).then((ok) => {
+      }).then((ok: boolean) => {
         if (!ok) return;
         form.dataset.cgConfirmed = '1';
         form.requestSubmit();
@@ -223,8 +231,8 @@ const items = [
       const params = new URLSearchParams(location.search);
       const ok = params.get('ok');
       const err = params.get('error');
-      if (ok) { cgToast({ title: 'Acción completada', message: ok, tone: 'success' }); params.delete('ok'); }
-      if (err) { cgToast({ title: 'Ha ocurrido un problema', message: err, tone: 'error', duration: 6000 }); params.delete('error'); }
+      if (ok) { window.cgToast?.({ title: 'Acción completada', message: ok, tone: 'success' }); params.delete('ok'); }
+      if (err) { window.cgToast?.({ title: 'Ha ocurrido un problema', message: err, tone: 'error', duration: 6000 }); params.delete('error'); }
       if (ok || err) {
         const qs = params.toString();
         history.replaceState({}, '', location.pathname + (qs ? '?' + qs : ''));
